@@ -1,6 +1,6 @@
 # Social Media Microservices Platform
 
-![Java](https://img.shields.io/badge/Java-17-orange) ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.x-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
+![Java](https://img.shields.io/badge/Java-21-orange) ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.x-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
 
 A scalable social media platform built with Java Spring Boot microservices.
 
@@ -19,7 +19,7 @@ A scalable social media platform built with Java Spring Boot microservices.
 
 ### Technology Stack
 
-- **Core Framework**: Java 17, Spring Boot 4.x
+- **Core Framework**: Java 21, Spring Boot 4.x
 - **Cloud Native**: Spring Cloud Gateway, Netflix Eureka, Spring Cloud Config
 - **Databases**:
   - PostgreSQL (User/Interaction)
@@ -37,7 +37,7 @@ A scalable social media platform built with Java Spring Boot microservices.
 Ensure you have the following installed:
 
 - [Docker](https://www.docker.com/get-started)
-- [Java 17+](https://www.oracle.com/java/technologies/downloads/)
+- [Java 21+](https://www.oracle.com/java/technologies/downloads/)
 - [Spring Boot](https://spring.io/projects/spring-boot)
 - [Maven](https://maven.apache.org/install.html)
 
