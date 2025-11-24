@@ -6,10 +6,10 @@ spring:
     name: user-service
 
   config:
-    import: configserver:${CONFIG_SERVER_URL:http://localhost:8071/}
+    import: configserver:${CONFIG_SERVER_URL:http://localhost:8888/}
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/userdb
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/userdb}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -23,7 +23,7 @@ spring:
         format_sql: true
 
   neo4j:
-    uri: bolt://localhost:7687
+    uri: ${NEO4J_URL:bolt://localhost:7687}
     authentication:
       username: ${NEO4J_USERNAME:neo4j}
       password: ${NEO4J_PASSWORD:password}
