@@ -40,12 +40,33 @@ services:
       timeout: 5s
       retries: 5
 
+  config-db-postgres:
+    image: postgres:latest
+    container_name: config-db-postgres
+    environment:
+      POSTGRES_DB: configdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - config_db_postgres_data:/var/lib/postgresql/data
+    networks:
+      - user-service-network
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   user_db_postgres_data:
     driver: local
   user_db_neo4j_data:
     driver: local
   user_db_neo4j_logs:
+    driver: local
+  config_db_postgres_data:
     driver: local
 
 networks:
