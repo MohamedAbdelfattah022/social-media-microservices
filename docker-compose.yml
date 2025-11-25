@@ -11,7 +11,7 @@ services:
     volumes:
       - user_db_postgres_data:/var/lib/postgresql/data
     networks:
-      - user-service-network
+      - social-media-network
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
@@ -33,7 +33,7 @@ services:
       - user_db_neo4j_data:/data
       - user_db_neo4j_logs:/logs
     networks:
-      - user-service-network
+      - social-media-network
     healthcheck:
       test: [ "CMD-SHELL", "cypher-shell -u neo4j -p password 'RETURN 1'" ]
       interval: 10s
@@ -52,9 +52,26 @@ services:
     volumes:
       - config_db_postgres_data:/var/lib/postgresql/data
     networks:
-      - user-service-network
+      - social-media-network
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitMQ
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - social-media-network
+    healthcheck:
+      test: [ "CMD-SHELL", "rabbitmq-diagnostics -q check_running" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -70,5 +87,5 @@ volumes:
     driver: local
 
 networks:
-  user-service-network:
+  social-media-network:
     driver: bridge
