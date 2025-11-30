@@ -6,26 +6,18 @@ spring:
     name: config-server
 
   profiles:
-    active: jdbc
+    active: native
 
   cloud:
     config:
       server:
-        jdbc:
-          sql: SELECT KEY, VALUE FROM PROPERTIES WHERE APPLICATION=? AND PROFILE=? AND LABEL=?
-
-  datasource:
-    url: jdbc:postgresql://localhost:5433/configdb
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
-    driver-class-name: org.postgresql.Driver
-
+        native:
+          search-locations: classpath:/config
 #  rabbitmq:
 #    host: localhost
 #    port: 5672
 #    username: guest
 #    password: guest
-
 
 #management:
 #  metrics:
@@ -41,8 +33,3 @@ spring:
 #  enabled: true
 #  refresh:
 #    enabled: true
-
-logging:
-  pattern:
-    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
-    console: "%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - %msg%n"
