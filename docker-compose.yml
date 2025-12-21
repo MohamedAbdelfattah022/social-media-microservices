@@ -18,6 +18,25 @@ services:
       timeout: 5s
       retries: 5
 
+  post-db-postgres:
+    image: postgres:latest
+    container_name: post-db-postgres
+    environment:
+      POSTGRES_DB: postdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - post_db_postgres_data:/var/lib/postgresql/data
+    networks:
+      - social-media-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   user-db-neo4j:
     image: neo4j:5
     container_name: user-db-neo4j
@@ -36,25 +55,6 @@ services:
       - social-media-network
     healthcheck:
       test: [ "CMD-SHELL", "cypher-shell -u neo4j -p password 'RETURN 1'" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  config-db-postgres:
-    image: postgres:latest
-    container_name: config-db-postgres
-    environment:
-      POSTGRES_DB: configdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5433:5432"
-    volumes:
-      - config_db_postgres_data:/var/lib/postgresql/data
-    networks:
-      - social-media-network
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -79,11 +79,11 @@ services:
 volumes:
   user_db_postgres_data:
     driver: local
+  post_db_postgres_data:
+    driver: local
   user_db_neo4j_data:
     driver: local
   user_db_neo4j_logs:
-    driver: local
-  config_db_postgres_data:
     driver: local
 
 networks:
