@@ -2,9 +2,23 @@ spring:
   application:
     name: api-gateway
 
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: false
+              lower-case-service-id: true
+          httpclient:
+            connect-timeout: 3000
+            response-timeout: 10s
+
 server:
   port: 8080
 
 logging:
   level:
     org.springframework: INFO
+
+

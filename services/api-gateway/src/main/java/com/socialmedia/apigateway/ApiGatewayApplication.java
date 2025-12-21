@@ -20,6 +20,10 @@ public class ApiGatewayApplication {
                         .path("/api/users/**")
                         .uri("lb://USER-SERVICE")
                 )
+                .route(p -> p
+                        .path("/api/posts/**")
+                        .uri("lb://POST-SERVICE")
+                )
                 .build();
     }
 }
