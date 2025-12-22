@@ -23,7 +23,7 @@ import java.util.Set;
 public class UserNode {
     @Id
     @Property("userId")
-    private Long userId;
+    private String userId;
 
     @Version
     private Long version;

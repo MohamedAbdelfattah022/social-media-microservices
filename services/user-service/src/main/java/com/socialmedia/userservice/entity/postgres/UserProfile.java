@@ -10,21 +10,14 @@ import java.time.LocalDateTime;
 
 @Entity
 @Builder
-@Table(name = "users")
+@Table(name = "user_profiles")
 @Getter @Setter @ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class User {
+public class UserProfile {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, unique = true, length = 50)
-    private String username;
-
-    @Column(nullable = false, unique = true)
-    private String email;
+    private String id;
 
     private String firstName;
     private String lastName;

@@ -24,7 +24,7 @@ public class OutboxEvent {
     private String aggregateType;
 
     @Column(nullable = false)
-    private Long aggregateId;
+    private String aggregateId;
 
     @Column(nullable = false, length = 50)
     private String eventType;

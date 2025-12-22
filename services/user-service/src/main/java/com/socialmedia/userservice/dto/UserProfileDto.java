@@ -5,21 +5,32 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserProfileDto {
-    private Long id;
-    private String username;
-    private String email;
+    private String id;
     private String firstName;
     private String lastName;
+    private String username;
+    private String email;
     private String bio;
     private String profilePictureUrl;
     private Long followerCount;
     private Long followingCount;
-    private LocalDateTime createdAt;
+
+    public UserProfileDto(
+            String id, String firstName, String lastName,
+            String username, String email, String bio,
+            String profilePictureUrl
+    ) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.username = username;
+        this.email = email;
+        this.bio = bio;
+        this.profilePictureUrl = profilePictureUrl;
+    }
 }

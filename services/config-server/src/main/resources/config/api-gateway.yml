@@ -1,3 +1,6 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: api-gateway
@@ -14,8 +17,11 @@ spring:
             connect-timeout: 3000
             response-timeout: 10s
 
-server:
-  port: 8080
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/social-media}
 
 logging:
   level:

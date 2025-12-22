@@ -9,22 +9,22 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserGraphRepository extends Neo4jRepository<UserNode, Long> {
+public interface UserGraphRepository extends Neo4jRepository<UserNode, String> {
 
     @Query("MATCH (u:User {userId: $userId}) RETURN u")
-    Optional<UserNode> findByUserId(Long userId);
+    Optional<UserNode> findByUserId(String userId);
 
     @Query("MATCH (u:User {userId: $userId})<-[:FOLLOWS]-(follower) RETURN follower")
-    List<UserNode> findFollowers(Long userId);
+    List<UserNode> findFollowers(String userId);
 
     @Query("MATCH (u:User {userId: $userId})-[:FOLLOWS]->(following) RETURN following")
-    List<UserNode> findFollowing(Long userId);
+    List<UserNode> findFollowing(String userId);
 
     @Query("MATCH (u:User {userId: $userId})<-[:FOLLOWS]-() RETURN COUNT(*)")
-    Long countFollowers(Long userId);
+    Long countFollowers(String userId);
 
     @Query("MATCH (u:User {userId: $userId})-[:FOLLOWS]->() RETURN COUNT(*)")
-    Long countFollowing(Long userId);
+    Long countFollowing(String userId);
 
     @Query("""
             MATCH (follower:User {userId: $followerId})
@@ -33,22 +33,22 @@ public interface UserGraphRepository extends Neo4jRepository<UserNode, Long> {
             SET r.followedAt = coalesce(r.followedAt, datetime())
             RETURN r
             """)
-    void createFollowRelationship(Long followerId, Long followeeId);
+    void createFollowRelationship(String followerId, String followeeId);
 
     @Query("""
             MATCH (follower:User {userId: $followerId})-[r:FOLLOWS]->(followee:User {userId: $followeeId})
             DELETE r
             """)
-    void deleteFollowRelationship(Long followerId, Long followeeId);
+    void deleteFollowRelationship(String followerId, String followeeId);
 
     @Query("""
             RETURN exists( (:User {userId: $followerId})-[:FOLLOWS]->(:User {userId: $followeeId}) )
             """)
-    boolean isFollowing(Long followerId, Long followeeId);
+    boolean isFollowing(String followerId, String followeeId);
 
     @Query("""
             MATCH (u:User {userId: $userId})
             DETACH DELETE u
             """)
-    void deleteUserAndRelationships(Long userId);
+    void deleteUserAndRelationships(String userId);
 }

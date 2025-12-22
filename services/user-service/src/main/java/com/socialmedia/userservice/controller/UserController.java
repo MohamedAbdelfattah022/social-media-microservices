@@ -1,6 +1,5 @@
 package com.socialmedia.userservice.controller;
 
-import com.socialmedia.userservice.dto.CreateUserDto;
 import com.socialmedia.userservice.dto.UpdateUserDto;
 import com.socialmedia.userservice.dto.UserProfileDto;
 import com.socialmedia.userservice.service.SocialGraphService;
@@ -10,9 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -22,66 +19,43 @@ public class UserController {
     private final UserService userService;
     private final SocialGraphService socialGraphService;
 
-    @PostMapping
-    public ResponseEntity<Void> createUser(@RequestBody @Valid CreateUserDto dto) {
-        var id = userService.createUser(dto);
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(id)
-                .toUri();
-        return ResponseEntity.created(location).build();
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileDto> getCurrentUser() {
+        return ResponseEntity.ok(userService.getUserProfile());
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<UserProfileDto> getUserProfile(@PathVariable Long userId) {
+    public ResponseEntity<UserProfileDto> getUserProfile(@PathVariable String userId) {
         return ResponseEntity.ok(userService.getUserProfile(userId));
     }
 
-    @PutMapping("/{userId}")
-    public ResponseEntity<Void> updateUserProfile(
-            @PathVariable Long userId,
-            @RequestBody @Valid UpdateUserDto dto) {
-        userService.updateUserProfile(userId, dto);
+    @PatchMapping("/me")
+    public ResponseEntity<Void> updateUserProfile(@RequestBody @Valid UpdateUserDto dto) {
+        userService.updateUserProfile(dto);
         return ResponseEntity.noContent().build();
     }
 
-    // TODO: (Copilot Review) The API design exposes followerId as a path parameter,
-    // allowing any user to follow on behalf of another user. This is a security
-    // vulnerability. The followerId should be derived from the authenticated user's
-    // session/token, not from the request path.
-    @PostMapping("/{followerId}/follow/{followeeId}")
-    public ResponseEntity<Void> followUser(
-            @PathVariable Long followerId,
-            @PathVariable Long followeeId) {
-        socialGraphService.followUser(followerId, followeeId);
+
+    @PostMapping("/follow/{followeeId}")
+    public ResponseEntity<Void> followUser(@PathVariable String followeeId) {
+        socialGraphService.followUser(followeeId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    // TODO: (Copilot Review) The API design exposes followerId as a path parameter,
-    // allowing any user to unfollow on behalf of another user. This is a security
-    // vulnerability. The followerId should be derived from the authenticated user's
-    // session/token, not from the request path.
-    @DeleteMapping("/{followerId}/follow/{followeeId}")
-    public ResponseEntity<Void> unfollowUser(
-            @PathVariable Long followerId,
-            @PathVariable Long followeeId) {
-        socialGraphService.unfollowUser(followerId, followeeId);
+    @DeleteMapping("/follow/{followeeId}")
+    public ResponseEntity<Void> unfollowUser(@PathVariable String followeeId) {
+        socialGraphService.unfollowUser(followeeId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("/{userId}/followers")
-    public ResponseEntity<List<UserProfileDto>> getFollowers(@PathVariable Long userId) {
+    public ResponseEntity<List<UserProfileDto>> getFollowers(@PathVariable String userId) {
         return ResponseEntity.ok(socialGraphService.getFollowers(userId));
     }
 
     @GetMapping("/{userId}/following")
-    public ResponseEntity<List<UserProfileDto>> getFollowing(@PathVariable Long userId) {
+    public ResponseEntity<List<UserProfileDto>> getFollowing(@PathVariable String userId) {
         return ResponseEntity.ok(socialGraphService.getFollowing(userId));
     }
 
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
-        userService.deleteUser(userId);
-        return ResponseEntity.noContent().build();
-    }
 }

@@ -62,16 +62,16 @@ public class OutboxEventProcessor {
         JsonNode payload = objectMapper.readTree(event.getPayload());
 
         UserNode userNode = UserNode.builder()
-                .userId(payload.get("userId").asLong())
+                .userId(payload.get("userId").asString())
                 .username(payload.get("username").asString())
-                .createdAt(LocalDateTime.parse(payload.get("createdAt").asString()))
+                .createdAt(LocalDateTime.now())
                 .build();
 
         userGraphRepository.save(userNode);
     }
 
     private void handleDeletedEvent(OutboxEvent event) {
-        Long userId = event.getAggregateId();
+        String userId = event.getAggregateId();
         userGraphRepository.deleteUserAndRelationships(userId);
     }
 
