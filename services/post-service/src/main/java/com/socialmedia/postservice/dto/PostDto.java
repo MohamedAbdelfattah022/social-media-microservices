@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PostDto {
     private Long id;
-    private Long userId;
+    private String userId;
     private String content;
     private PrivacySettings privacy;
     private List<String> mediaUrls;

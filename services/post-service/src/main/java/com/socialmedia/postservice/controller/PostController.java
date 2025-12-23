@@ -1,10 +1,16 @@
 package com.socialmedia.postservice.controller;
 
-import com.socialmedia.postservice.dto.*;
+import com.socialmedia.postservice.dto.CreatePostDto;
+import com.socialmedia.postservice.dto.CursorPageResponse;
+import com.socialmedia.postservice.dto.PostDto;
+import com.socialmedia.postservice.dto.UpdatePostDto;
+import com.socialmedia.postservice.security.AuthenticatedUser;
 import com.socialmedia.postservice.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -18,8 +24,13 @@ public class PostController {
 
 
     @PostMapping
-    public ResponseEntity<Void> createPost(@Valid @RequestBody CreatePostDto dto) {
-        Long id = postService.createPost(dto);
+    public ResponseEntity<Void> createPost(
+            @Valid @RequestBody CreatePostDto dto,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        var user = AuthenticatedUser.fromJwt(jwt);
+
+        Long id = postService.createPost(dto, user.id());
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(id)
@@ -35,7 +46,7 @@ public class PostController {
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<CursorPageResponse<PostDto>> getUserPosts(
-            @PathVariable Long userId,
+            @PathVariable String userId,
             @RequestParam(required = false) String cursor,
             @RequestParam Integer pageSize
     ) {
@@ -46,14 +57,22 @@ public class PostController {
     }
 
     @PutMapping("/{postId}")
-    public ResponseEntity<Void> updatePost(@RequestBody UpdatePostDto dto, @PathVariable Long postId) {
-        postService.updatePost(dto, postId);
+    public ResponseEntity<Void> updatePost(
+            @RequestBody UpdatePostDto dto,
+            @PathVariable Long postId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        var user = AuthenticatedUser.fromJwt(jwt);
+        postService.updatePost(dto, postId, user.id());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{postId}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long postId) {
-        postService.deletePost(postId);
+    public ResponseEntity<Void> deletePost(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal Jwt jwt) {
+        AuthenticatedUser user = AuthenticatedUser.fromJwt(jwt);
+        postService.deletePost(postId, user.id());
         return ResponseEntity.noContent().build();
     }
 }

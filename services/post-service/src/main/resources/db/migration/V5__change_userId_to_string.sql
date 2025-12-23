@@ -1,0 +1,6 @@
+ALTER TABLE posts
+DROP
+COLUMN user_id;
+
+ALTER TABLE posts
+    ADD user_id VARCHAR(36) NOT NULL;

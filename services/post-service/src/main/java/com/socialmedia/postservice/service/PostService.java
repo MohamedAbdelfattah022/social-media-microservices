@@ -1,9 +1,13 @@
 package com.socialmedia.postservice.service;
 
 import com.socialmedia.postservice.consts.EventType;
-import com.socialmedia.postservice.dto.*;
+import com.socialmedia.postservice.dto.CreatePostDto;
+import com.socialmedia.postservice.dto.CursorPageResponse;
+import com.socialmedia.postservice.dto.PostDto;
+import com.socialmedia.postservice.dto.UpdatePostDto;
 import com.socialmedia.postservice.dto.projection.PostProjection;
 import com.socialmedia.postservice.exception.ResourceNotFoundException;
+import com.socialmedia.postservice.exception.ResourceOwnershipException;
 import com.socialmedia.postservice.mapper.EventFactory;
 import com.socialmedia.postservice.mapper.PostMapper;
 import com.socialmedia.postservice.repository.PostRepository;
@@ -27,8 +31,8 @@ public class PostService {
     private final EventFactory eventFactory;
 
     @Transactional
-    public Long createPost(CreatePostDto dto) {
-        var post = postMapper.toPost(dto);
+    public Long createPost(CreatePostDto dto, String userId) {
+        var post = postMapper.toPost(dto, userId);
         var savedPost = postRepository.save(post);
         var event = eventFactory.createEvent(savedPost, EventType.POST_CREATED);
         messageProducer.sendMessage(event);
@@ -44,7 +48,7 @@ public class PostService {
         return postMapper.toPostDto(postProjection);
     }
 
-    public CursorPageResponse<PostDto> getUserPosts(Long userId, String cursor, Integer pageSize) {
+    public CursorPageResponse<PostDto> getUserPosts(String userId, String cursor, Integer pageSize) {
         LocalDateTime cursorTime = null;
         Long lastId = null;
 
@@ -77,6 +81,30 @@ public class PostService {
                 .build();
     }
 
+    public void updatePost(UpdatePostDto dto, Long postId, String userId) {
+        var post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+
+        verifyOwnership(post.getUserId(), userId);
+
+        post.setEdited(true);
+        post.setContent(dto.getContent() != null ? dto.getContent() : post.getContent());
+        post.setPrivacy(dto.getPrivacy() != null ? dto.getPrivacy() : post.getPrivacy());
+        post.setMediaUrls(dto.getMediaUrls() != null ? dto.getMediaUrls() : post.getMediaUrls());
+
+        postRepository.save(post);
+    }
+
+    public void deletePost(Long postId, String userId) {
+        var post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+
+        verifyOwnership(post.getUserId(), userId);
+
+        postRepository.deleteById(postId);
+    }
+
+
     private String encodeCursor(String createdAt, Long id) {
         String cursorString = createdAt + "," + id;
         return Base64.getUrlEncoder().encodeToString(cursorString.getBytes());
@@ -87,19 +115,8 @@ public class PostService {
         return decoded.split(",");
     }
 
-    public void updatePost(UpdatePostDto dto, Long postId) {
-        var post = postRepository.findById(postId).orElseThrow(() -> new ResourceNotFoundException("Post not found"));
-
-        post.setEdited(true);
-        post.setContent(dto.getContent() != null ? dto.getContent() : post.getContent());
-        post.setPrivacy(dto.getPrivacy() != null ? dto.getPrivacy() : post.getPrivacy());
-        post.setMediaUrls(dto.getMediaUrls() != null ? dto.getMediaUrls() : post.getMediaUrls());
-
-        postRepository.save(post);
-    }
-
-    public void deletePost(Long postId) {
-        if (!postRepository.existsById(postId)) throw new ResourceNotFoundException("Post not found");
-        postRepository.deleteById(postId);
+    private void verifyOwnership(String ownerId, String currentUserId) {
+        if (!ownerId.equals(currentUserId))
+            throw new ResourceOwnershipException("You do not have permission to perform this action");
     }
 }

@@ -1,6 +1,5 @@
 package com.socialmedia.postservice.dto.event;
 
-import com.socialmedia.postservice.consts.EventType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Event {
     private Long postId;
-    private Long userId;
+    private String userId;
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

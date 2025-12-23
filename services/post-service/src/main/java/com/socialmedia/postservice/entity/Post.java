@@ -3,6 +3,8 @@ package com.socialmedia.postservice.entity;
 import com.socialmedia.postservice.enums.PrivacySettings;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -22,8 +24,8 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long userId;
+    @Column(name = "user_id", nullable = false, length = 36)
+    private String userId;
 
     @Column(columnDefinition = "TEXT")
     private String content;
@@ -34,6 +36,7 @@ public class Post {
             joinColumns = @JoinColumn(name = "post_id")
     )
     @Column(name = "media_url")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<String> mediaUrls;
 
     @Enumerated(EnumType.STRING)

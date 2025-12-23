@@ -1,0 +1,3 @@
+DROP TABLE comments CASCADE;
+
+DROP TABLE likes CASCADE;
