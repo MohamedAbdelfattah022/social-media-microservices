@@ -37,6 +37,25 @@ services:
       timeout: 5s
       retries: 5
 
+  interaction-db-postgres:
+    image: postgres:latest
+    container_name: interaction-db-postgres
+    environment:
+      POSTGRES_DB: interactiondb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+    volumes:
+      - interaction_db_postgres_data:/var/lib/postgresql/data
+    networks:
+      - social-media-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   user-db-neo4j:
     image: neo4j:5
     container_name: user-db-neo4j
@@ -109,6 +128,8 @@ volumes:
   user_db_postgres_data:
     driver: local
   post_db_postgres_data:
+    driver: local
+  interaction_db_postgres_data:
     driver: local
   user_db_neo4j_data:
     driver: local

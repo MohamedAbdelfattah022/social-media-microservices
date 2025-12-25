@@ -1,0 +1,40 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: interaction-service
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5435/interactiondb}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/social-media}
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:8180/realms/social-media/protocol/openid-connect/certs}
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+  grpc:
+    client:
+      channels:
+        post-service:
+          address: ${POST_SERVICE_GRPC_ADDRESS:localhost:9090}
+          negotiation-type: plaintext

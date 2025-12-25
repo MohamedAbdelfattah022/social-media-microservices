@@ -24,6 +24,10 @@ public class ApiGatewayApplication {
                         .path("/api/posts/**")
                         .uri("lb://POST-SERVICE")
                 )
+                .route(p -> p
+                        .path("/api/likes/**", "/api/comments/**")
+                        .uri("lb://INTERACTION-SERVICE")
+                )
                 .build();
     }
 }
