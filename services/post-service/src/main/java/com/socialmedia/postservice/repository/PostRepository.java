@@ -57,4 +57,31 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             @Param("cursor") LocalDateTime cursor,
             @Param("lastId") Long lastId,
             @Param("limit") Integer limit);
+
+    @Query(value = """
+                SELECT
+                    p.id,
+                    p.user_id,
+                    p.content,
+                    p.privacy,
+                    p.is_edited,
+                    p.created_at,
+                    p.updated_at,
+                    (SELECT COALESCE(array_agg(media_url), '{}')
+                     FROM post_media_urls
+                     WHERE post_id = p.id) AS media_urls
+                FROM posts p
+                WHERE p.user_id IN (:userIds)
+                AND p.privacy = 'PUBLIC'
+                AND (CAST(:cursor AS TIMESTAMP) IS NULL
+                     OR p.created_at < CAST(:cursor AS TIMESTAMP)
+                     OR (p.created_at = CAST(:cursor AS TIMESTAMP) AND p.id < :lastId))
+                ORDER BY p.created_at DESC, p.id DESC
+                LIMIT :limit
+            """, nativeQuery = true)
+    List<PostProjection> findByUserIdsWithCursor(
+            @Param("userIds") List<String> userIds,
+            @Param("cursor") LocalDateTime cursor,
+            @Param("lastId") Long lastId,
+            @Param("limit") Integer limit);
 }

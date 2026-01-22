@@ -7,14 +7,39 @@ option java_outer_classname = "PostServiceProto";
 package post;
 
 service PostService {
-    rpc CheckPostExists(CheckPostExistsRequest) returns (CheckPostExistsResponse) {}
-
+  rpc CheckPostExists(CheckPostExistsRequest) returns (CheckPostExistsResponse) {}
+  rpc GetPostsByUserIds(GetPostsByUserIdsRequest) returns (GetPostsByUserIdsResponse) {}
 }
 
 message CheckPostExistsRequest {
-    int64 post_id = 1;
+  int64 post_id = 1;
 }
 
 message CheckPostExistsResponse {
-    bool exists = 1;
+  bool exists = 1;
+}
+
+message GetPostsByUserIdsRequest {
+  repeated string user_ids = 1;
+  int32 page_size = 2;
+  string cursor = 3;
+}
+
+message PostInfo {
+  int64 id = 1;
+  string user_id = 2;
+  string content = 3;
+  string privacy = 4;
+  repeated string media_urls = 5;
+  bool is_edited = 6;
+  int64 like_count = 7;
+  int64 comment_count = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+message GetPostsByUserIdsResponse {
+  repeated PostInfo posts = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
 }

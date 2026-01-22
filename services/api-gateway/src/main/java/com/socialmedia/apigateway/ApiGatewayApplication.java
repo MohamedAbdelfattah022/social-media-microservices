@@ -28,6 +28,10 @@ public class ApiGatewayApplication {
                         .path("/api/likes/**", "/api/comments/**")
                         .uri("lb://INTERACTION-SERVICE")
                 )
+                .route(p -> p
+                        .path("/api/feed/**")
+                        .uri("lb://FEED-SERVICE")
+                )
                 .build();
     }
 }

@@ -81,6 +81,42 @@ public class PostService {
                 .build();
     }
 
+    public CursorPageResponse<PostDto> getPostsByUserIds(List<String> userIds, String cursor, int pageSize) {
+        if (userIds == null || userIds.isEmpty()) {
+            return CursorPageResponse.<PostDto>builder()
+                    .data(List.of())
+                    .nextCursor(null)
+                    .hasNext(false)
+                    .pageSize(pageSize)
+                    .build();
+        }
+        LocalDateTime cursorTime = null;
+        Long lastId = null;
+        if (!StringUtil.isNullOrEmpty(cursor)) {
+            String[] parts = decodeCursor(cursor);
+            cursorTime = LocalDateTime.parse(parts[0]);
+            lastId = Long.parseLong(parts[1]);
+        }
+        List<PostProjection> projections = postRepository.findByUserIdsWithCursor(
+                userIds, cursorTime, lastId, pageSize + 1);
+        boolean hasNext = projections.size() > pageSize;
+        if (hasNext) projections = projections.subList(0, pageSize);
+        List<PostDto> posts = projections.stream()
+                .map(postMapper::toPostDto)
+                .toList();
+        String nextCursor = null;
+        if (hasNext && !posts.isEmpty()) {
+            var lastPost = posts.getLast();
+            nextCursor = encodeCursor(lastPost.getCreatedAt(), lastPost.getId());
+        }
+        return CursorPageResponse.<PostDto>builder()
+                .data(posts)
+                .nextCursor(nextCursor)
+                .hasNext(hasNext)
+                .pageSize(pageSize)
+                .build();
+    }
+
     public void updatePost(UpdatePostDto dto, Long postId, String userId) {
         var post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
