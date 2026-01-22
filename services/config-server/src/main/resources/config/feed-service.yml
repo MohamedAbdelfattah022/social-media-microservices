@@ -1,0 +1,14 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: feed-service
+
+  grpc:
+    client:
+      channels:
+        user-service:
+          address: ${USER_SERVICE_GRPC_HOST:localhost}:${USER_SERVICE_GRPC_PORT:9091}
+        post-service:
+          address: ${POST_SERVICE_GRPC_HOST:localhost}:${POST_SERVICE_GRPC_PORT:9090}

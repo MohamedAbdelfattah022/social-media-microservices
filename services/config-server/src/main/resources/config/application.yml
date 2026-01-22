@@ -1,3 +1,11 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/social-media}
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:8180/realms/social-media/protocol/openid-connect/certs}
+
 eureka:
   instance:
     hostname: ${HOST_NAME:localhost}
@@ -15,3 +23,6 @@ logging:
   pattern:
     level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
     console: "%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - %msg%n"
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
