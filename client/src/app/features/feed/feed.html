@@ -1,0 +1,7 @@
+<div class="flex flex-col gap-4">
+  @for (post of posts.data; track post.id) {
+  <app-post-card class="mx-5" [data]="post"></app-post-card>
+  } @empty {
+  <p>No posts available.</p>
+  }
+</div>
