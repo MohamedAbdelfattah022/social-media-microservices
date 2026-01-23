@@ -1,18 +1,18 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SignupRequest } from '../../shared/models/signup-request';
-import { UserService } from '../../core/services/user.service';
-import { Router } from '@angular/router';
+import { SignupRequest } from '../../shared/models/auth/signup-request';
+import { AuthService } from '../../core/services/auth.service';
+import { Router, RouterLink } from '@angular/router';
 
 
 @Component({
   selector: 'app-signup',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './signup.html',
   styleUrl: './signup.css',
 })
 export class Signup {
-  private userService = inject(UserService);
+  private authService = inject(AuthService);
   private router = inject(Router);
 
   signupData = signal<SignupRequest>({
@@ -31,7 +31,7 @@ export class Signup {
     console.log('Sign Up Data:', this.signupData());
     this.isLoading.set(true);
 
-    this.userService.signup(this.signupData())
+    this.authService.signup(this.signupData())
       .subscribe({
         next: (response) => {
           console.log('Signup successful:', response);
