@@ -7,9 +7,14 @@ package user;
 
 service UserService {
   rpc GetFollowing(GetFollowingRequest) returns (GetFollowingResponse) {}
+  rpc GetUserInfo(UserInfoRequest) returns (UserInfo) {}
 }
 
 message GetFollowingRequest {
+  string user_id = 1;
+}
+
+message UserInfoRequest {
   string user_id = 1;
 }
 

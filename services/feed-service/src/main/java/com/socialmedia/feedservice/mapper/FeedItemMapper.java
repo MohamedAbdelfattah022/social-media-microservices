@@ -13,6 +13,10 @@ public class FeedItemMapper {
         return new FeedItemDto(
                 post.getId(),
                 post.getUserId(),
+                post.getUsername(),
+                post.getFirstName(),
+                post.getLastName(),
+                post.getProfilePictureUrl(),
                 post.getContent(),
                 post.getPrivacy(),
                 post.getMediaUrlsList(),

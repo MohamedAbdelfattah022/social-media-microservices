@@ -5,9 +5,18 @@ spring:
   application:
     name: post-service
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
   grpc:
     server:
       port: 9090
+    client:
+      channels:
+        user-service:
+          address: ${USER_SERVICE_GRPC_HOST:localhost}:${USER_SERVICE_GRPC_PORT:9091}
 
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5434/postdb}

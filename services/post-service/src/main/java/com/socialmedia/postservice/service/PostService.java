@@ -11,6 +11,7 @@ import com.socialmedia.postservice.exception.ResourceOwnershipException;
 import com.socialmedia.postservice.mapper.EventFactory;
 import com.socialmedia.postservice.mapper.PostMapper;
 import com.socialmedia.postservice.repository.PostRepository;
+import com.socialmedia.postservice.security.AuthenticatedUser;
 import io.netty.util.internal.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,8 +32,8 @@ public class PostService {
     private final EventFactory eventFactory;
 
     @Transactional
-    public Long createPost(CreatePostDto dto, String userId) {
-        var post = postMapper.toPost(dto, userId);
+    public Long createPost(CreatePostDto dto, AuthenticatedUser user) {
+        var post = postMapper.toPost(dto, user);
         var savedPost = postRepository.save(post);
         var event = eventFactory.createEvent(savedPost, EventType.POST_CREATED);
         messageProducer.sendMessage(event);

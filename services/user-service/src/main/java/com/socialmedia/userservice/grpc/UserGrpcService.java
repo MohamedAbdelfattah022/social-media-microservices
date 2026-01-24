@@ -1,11 +1,10 @@
 package com.socialmedia.userservice.grpc;
 
-import com.socialmedia.grpc.user.GetFollowingRequest;
-import com.socialmedia.grpc.user.GetFollowingResponse;
-import com.socialmedia.grpc.user.UserInfo;
-import com.socialmedia.grpc.user.UserServiceGrpc;
+import com.socialmedia.grpc.user.*;
 import com.socialmedia.userservice.dto.UserProfileDto;
+import com.socialmedia.userservice.mapper.UserGrpcMapper;
 import com.socialmedia.userservice.service.SocialGraphService;
+import com.socialmedia.userservice.service.UserService;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +17,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
     private final SocialGraphService socialGraphService;
+    private final UserService userService;
+    private final UserGrpcMapper userGrpcMapper;
 
     @Override
     public void getFollowing(GetFollowingRequest request, StreamObserver<GetFollowingResponse> responseObserver) {
@@ -29,17 +30,24 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
 
         for (UserProfileDto user : following) {
             responseBuilder.addUsers(
-                    UserInfo.newBuilder()
-                            .setId(user.getId())
-                            .setFirstName(user.getFirstName() != null ? user.getFirstName() : "")
-                            .setLastName(user.getLastName() != null ? user.getLastName() : "")
-                            .setUsername(user.getUsername() != null ? user.getUsername() : "")
-                            .setProfilePictureUrl(user.getProfilePictureUrl() != null ? user.getProfilePictureUrl() : "")
-                            .build()
+                    userGrpcMapper.toUserInfo(user)
             );
         }
 
         responseObserver.onNext(responseBuilder.build());
         responseObserver.onCompleted();
     }
+
+    @Override
+    public void getUserInfo(UserInfoRequest request, StreamObserver<UserInfo> responseObserver) {
+
+        log.debug("gRPC getUserInfo for userId: {}", request.getUserId());
+
+        UserProfileDto userProfile = userService.getUserProfile(request.getUserId());
+        UserInfo userInfo = userGrpcMapper.toUserInfo(userProfile);
+
+        responseObserver.onNext(userInfo);
+        responseObserver.onCompleted();
+    }
+
 }
