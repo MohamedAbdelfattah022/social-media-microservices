@@ -15,6 +15,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                 SELECT
                     p.id,
                     p.user_id,
+                    p.user_name,
+                    p.first_name,
+                    p.last_name,
+                    p.profile_picture_url,
                     p.content,
                     p.privacy,
                     p.is_edited,
@@ -23,8 +27,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                     (SELECT COALESCE(array_agg(media_url), '{}')
                      FROM post_media_urls
                      WHERE post_id = p.id) AS media_urls
-                    -- (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS like_count,
-                    -- (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comment_count
                 FROM posts p
                 WHERE p.id = :id
                 AND p.privacy = 'PUBLIC'
@@ -35,6 +37,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                 SELECT
                     p.id,
                     p.user_id,
+                    p.user_name,
+                    p.first_name,
+                    p.last_name,
+                    p.profile_picture_url,
                     p.content,
                     p.privacy,
                     p.is_edited,
@@ -43,8 +49,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                     (SELECT COALESCE(array_agg(media_url), '{}')
                      FROM post_media_urls
                      WHERE post_id = p.id) AS media_urls
-                    -- (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS like_count,
-                    -- (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comment_count
                 FROM posts p
                 WHERE p.user_id = :userId
                 AND p.privacy = 'PUBLIC'
@@ -62,6 +66,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                 SELECT
                     p.id,
                     p.user_id,
+                    p.user_name,
+                    p.first_name,
+                    p.last_name,
+                    p.profile_picture_url,
                     p.content,
                     p.privacy,
                     p.is_edited,

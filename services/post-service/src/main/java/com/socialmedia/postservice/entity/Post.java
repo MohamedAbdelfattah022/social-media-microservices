@@ -27,6 +27,18 @@ public class Post {
     @Column(name = "user_id", nullable = false, length = 36)
     private String userId;
 
+    @Column(name = "user_name")
+    private String userName;
+
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
+
+    @Column(name = "profile_picture_url")
+    private String profilePictureUrl;
+
     @Column(columnDefinition = "TEXT")
     private String content;
 

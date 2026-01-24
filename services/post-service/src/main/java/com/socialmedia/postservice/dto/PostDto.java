@@ -12,6 +12,10 @@ import java.util.List;
 public class PostDto {
     private Long id;
     private String userId;
+    private String userName;
+    private String firstName;
+    private String lastName;
+    private String profilePictureUrl;
     private String content;
     private PrivacySettings privacy;
     private List<String> mediaUrls;

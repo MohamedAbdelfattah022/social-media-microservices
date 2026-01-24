@@ -28,14 +28,18 @@ message GetPostsByUserIdsRequest {
 message PostInfo {
   int64 id = 1;
   string user_id = 2;
-  string content = 3;
-  string privacy = 4;
-  repeated string media_urls = 5;
-  bool is_edited = 6;
-  int64 like_count = 7;
-  int64 comment_count = 8;
-  string created_at = 9;
-  string updated_at = 10;
+  string username = 3;
+  string first_name = 4;
+  string last_name = 5;
+  string profile_picture_url = 6;
+  string content = 7;
+  string privacy = 8;
+  repeated string media_urls = 9;
+  bool is_edited = 10;
+  int64 like_count = 11;
+  int64 comment_count = 12;
+  string created_at = 13;
+  string updated_at = 14;
 }
 
 message GetPostsByUserIdsResponse {
