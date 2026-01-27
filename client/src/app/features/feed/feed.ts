@@ -69,4 +69,12 @@ export class Feed implements OnInit {
         },
       });
   }
+
+  refresh() {
+    this.posts.set([]);
+    this.nextCursor.set(null);
+    this.hasNext.set(true);
+    this.error.set(null);
+    this.loadMore();
+  }
 }
