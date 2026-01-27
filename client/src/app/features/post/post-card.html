@@ -1,77 +1,134 @@
 <div
-  class="flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-shadow hover:shadow-md">
+  class="flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-shadow hover:shadow-md"
+>
   <!-- Header Section -->
   <div class="p-5 pb-3 flex items-start justify-between">
     <div class="flex items-center gap-3">
       <div class="relative">
         <div
-          class="h-12 w-12 rounded-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 ring-2 ring-white shadow-sm">
+          class="h-12 w-12 rounded-full overflow-hidden flex items-center justify-center bg-linear-to-br from-gray-100 to-gray-200 ring-2 ring-white shadow-sm"
+        >
           @if (true) {
-          <img [src]="data().profilePictureUrl" alt="avatar" class="h-full w-full object-cover" />
+            <img [src]="data().profilePictureUrl" alt="avatar" class="h-full w-full object-cover" />
           } @else {
-          <span class="text-gray-700 font-semibold text-sm">{{ data().username.slice(0, 2).toUpperCase() }}</span>
+            <span class="text-gray-700 font-semibold text-sm">{{
+              data().username.slice(0, 2).toUpperCase()
+            }}</span>
           }
         </div>
       </div>
       <div>
         <div class="flex items-center gap-2">
-          <h3 class="font-semibold text-gray-900 text-[15px] leading-tight">{{ data().firstName + ' ' + data().lastName
-            }}</h3>
+          <h3 class="font-semibold text-gray-900 text-[15px] leading-tight">
+            {{ data().firstName + ' ' + data().lastName }}
+          </h3>
         </div>
         <p class="text-[13px] text-gray-500 mt-0.5">{{ postDate }}</p>
       </div>
     </div>
-    <button class="rounded-full p-2 transition-all hover:bg-gray-100 active:scale-95 text-gray-500 hover:text-gray-700">
-      <lucide-icon [img]="Ellipsis" class="h-5 w-5"></lucide-icon>
-    </button>
+
+    <!-- Menu Button (Only visible for own posts) -->
+    @if (isOwnPost()) {
+      <div class="relative">
+        <button
+          type="button"
+          z-menu
+          [zMenuTriggerFor]="postMenu"
+          class="rounded-full p-2 transition-all hover:bg-gray-100 active:scale-95 text-gray-500 hover:text-gray-700"
+        >
+          <z-icon zType="ellipsis" class="h-5 w-5" />
+        </button>
+
+        <ng-template #postMenu>
+          <div z-menu-content class="w-48">
+            <button type="button" z-menu-item (click)="handleUpdate()">
+              <z-icon zType="pencil" class="mr-2" />
+              Update Post
+            </button>
+            <button type="button" z-menu-item zType="destructive" (click)="handleDelete()">
+              <z-icon zType="trash" class="mr-2" />
+              Delete Post
+            </button>
+          </div>
+        </ng-template>
+      </div>
+    }
   </div>
 
   <!-- Content Section -->
   <div class="px-5 pb-3">
-    <p class="whitespace-pre-wrap text-gray-800 text-[15px] leading-relaxed">{{ data().content }}</p>
-    @if(data().isEdited){
-    <span class="mt-2 inline-block text-xs text-gray-400 font-medium">Edited</span>
+    <p class="whitespace-pre-wrap text-gray-800 text-[15px] leading-relaxed">
+      {{ postContent() }}
+    </p>
+    @if (postIsEdited()) {
+      <span class="mt-2 inline-block text-xs text-gray-400 font-medium">Edited</span>
     }
   </div>
 
   <!-- Media Grid -->
   @if (data().mediaUrls) {
-  <div class="px-5 pb-3">
-    <div class="grid gap-1.5 rounded-xl overflow-hidden" [class]="
-        data().mediaUrls!.length === 1 ? 'grid-cols-1' :
-        data().mediaUrls!.length === 2 || data().mediaUrls!.length > 3 ? 'grid-cols-2' :
-        data().mediaUrls!.length === 3 ? 'grid-cols-3' : ''
-      ">
-      @for (url of data().mediaUrls; let i = $index; track url) {
-      <div class="relative overflow-hidden bg-gray-100 group"
-        [class.col-span-2]="data().mediaUrls!.length === 4 && i === 0">
-        <img [src]="url" [alt]="`Post media ${i + 1}`"
-          class="h-full w-full cursor-pointer object-cover transition-transform duration-300 group-hover:scale-110"
-          [style.aspect-ratio]="data().mediaUrls!.length === 1 ? '16/10' : '1/1'" />
-        <div class="absolute inset-0 bg-black opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+    <div class="px-5 pb-3">
+      <div
+        class="grid gap-1.5 rounded-xl overflow-hidden"
+        [class]="
+          data().mediaUrls!.length === 1
+            ? 'grid-cols-1'
+            : data().mediaUrls!.length === 2 || data().mediaUrls!.length > 3
+              ? 'grid-cols-2'
+              : data().mediaUrls!.length === 3
+                ? 'grid-cols-3'
+                : ''
+        "
+      >
+        @for (url of data().mediaUrls; let i = $index; track url) {
+          <div
+            class="relative overflow-hidden bg-gray-100 group"
+            [class.col-span-2]="data().mediaUrls!.length === 4 && i === 0"
+          >
+            <img
+              [src]="url"
+              [alt]="`Post media ${i + 1}`"
+              class="h-full w-full cursor-pointer object-cover transition-transform duration-300 group-hover:scale-110"
+              [style.aspect-ratio]="data().mediaUrls!.length === 1 ? '16/10' : '1/1'"
+            />
+            <div
+              class="absolute inset-0 bg-black opacity-0 group-hover:opacity-5 transition-opacity duration-300"
+            ></div>
+          </div>
+        }
       </div>
-      }
     </div>
-  </div>
   }
 
   <!-- Engagement Metrics Bar -->
-  <div class="px-5 py-2 flex items-center justify-between text-sm text-gray-500 border-t border-gray-50">
+  <div
+    class="px-5 py-2 flex items-center justify-between text-sm text-gray-500 border-t border-gray-50"
+  >
     <span class="hover:underline cursor-pointer">{{ data().likeCount }} likes</span>
     <span class="hover:underline cursor-pointer">{{ data().commentCount }} comments</span>
   </div>
 
   <!-- Action Buttons -->
   <div class="flex items-center gap-1 border-t border-gray-100 px-3 py-1.5">
-    <button (click)="handleLike()" [class]="'flex flex-1 items-center justify-center gap-2.5 rounded-lg px-4 py-2.5 transition-all duration-200 active:scale-95 font-medium text-sm ' +
-        (isLiked() ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'text-gray-600 hover:bg-gray-50')">
-      <lucide-icon [img]="Heart"
-        [class]="'h-5 w-5 transition-all duration-200 ' + (isLiked() ? 'fill-current scale-110' : '')"></lucide-icon>
+    <button
+      (click)="handleLike()"
+      [class]="
+        'flex flex-1 items-center justify-center gap-2.5 rounded-lg px-4 py-2.5 transition-all duration-200 active:scale-95 font-medium text-sm ' +
+        (isLiked() ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'text-gray-600 hover:bg-gray-50')
+      "
+    >
+      <z-icon
+        zType="heart"
+        [class]="
+          'h-5 w-5 transition-all duration-200 ' + (isLiked() ? 'fill-current scale-110' : '')
+        "
+      />
       <span>Like</span>
     </button>
     <button
-      class="flex flex-1 items-center justify-center gap-2.5 rounded-lg px-4 py-2.5 text-gray-600 transition-all duration-200 hover:bg-gray-50 active:scale-95 font-medium text-sm">
-      <lucide-icon [img]="MessageCircle" class="h-5 w-5"></lucide-icon>
+      class="flex flex-1 items-center justify-center gap-2.5 rounded-lg px-4 py-2.5 text-gray-600 transition-all duration-200 hover:bg-gray-50 active:scale-95 font-medium text-sm"
+    >
+      <z-icon zType="message-circle" class="h-5 w-5" />
       <span>Comment</span>
     </button>
   </div>

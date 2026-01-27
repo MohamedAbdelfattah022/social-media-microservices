@@ -77,4 +77,10 @@ export class Feed implements OnInit {
     this.error.set(null);
     this.loadMore();
   }
+
+  protected onPostDeleted(postId: number): void {
+    this.posts.update((currentPosts) =>
+      currentPosts.filter((post) => post.id !== postId)
+    );
+  }
 }
