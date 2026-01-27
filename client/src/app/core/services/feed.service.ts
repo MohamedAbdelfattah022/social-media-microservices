@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
 import { CursorPaginationResponse } from '../../shared/models/cursor-pagination-response';
-import { PostData } from '../../shared/models/post-data';
+import { PostData } from '../../shared/models/posts/post-data.dto';
 
 @Injectable({
   providedIn: 'root',
