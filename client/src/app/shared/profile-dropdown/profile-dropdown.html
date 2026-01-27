@@ -1,34 +1,41 @@
 <div class="relative">
-  <button (click)="toggleMenu()"
+  <button
+    (click)="toggleMenu()"
     class="flex items-center gap-2 p-1 rounded-full text-slate-600 hover:text-indigo-600 hover:bg-slate-100 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-    [class.bg-slate-100]="isMenuOpen()" [class.text-indigo-600]="isMenuOpen()">
-    <lucide-icon [img]="menu" class="w-8 h-8"></lucide-icon>
+    [class.bg-slate-100]="isMenuOpen()"
+    [class.text-indigo-600]="isMenuOpen()"
+  >
+    <z-icon zType="menu" class="w-6 h-6" />
   </button>
 
-  @if(isMenuOpen()) {
-  <div
-    class="absolute right-0 mt-2 w-48 rounded-lg bg-white shadow-lg ring-1 ring-black/5 divide-y divide-slate-100 transform opacity-100 scale-100 origin-top-right transition-all z-50">
+  @if (isMenuOpen()) {
+    <div
+      class="absolute right-0 mt-2 w-48 rounded-lg bg-white shadow-lg ring-1 ring-black/5 divide-y divide-slate-100 transform opacity-100 scale-100 origin-top-right transition-all z-50"
+    >
+      <div class="py-1">
+        <a
+          [routerLink]="['/profile', userId]"
+          (click)="closeMenu()"
+          class="group flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition-colors cursor-pointer"
+        >
+          <z-icon zType="user" class="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />
+          Profile</a
+        >
+      </div>
 
-    <div class="py-1">
-      <a [routerLink]="['/profile', userId]" (click)="closeMenu()"
-        class="group flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition-colors cursor-pointer">
-        <lucide-icon [img]="userIcon"
-          class="w-4 h-4 text-slate-400 group-hover:text-indigo-500"></lucide-icon>Profile</a>
+      <div class="py-1">
+        <button
+          (click)="logout()"
+          class="group w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors text-left"
+        >
+          <z-icon zType="log-out" class="w-4 h-4 text-red-400 group-hover:text-red-500"></z-icon>
+          Log out
+        </button>
+      </div>
     </div>
-
-    <div class="py-1">
-      <button (click)="logout()"
-        class="group w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors text-left">
-        <lucide-icon [img]="logOutIcon" class="w-4 h-4 text-red-400 group-hover:text-red-500"></lucide-icon>
-        Log out
-      </button>
-    </div>
-
-  </div>
   }
-
 </div>
 
-@if(isMenuOpen()) {
-<div (click)="closeMenu()" class="fixed inset-0 z-40"></div>
+@if (isMenuOpen()) {
+  <div (click)="closeMenu()" class="fixed inset-0 z-40"></div>
 }

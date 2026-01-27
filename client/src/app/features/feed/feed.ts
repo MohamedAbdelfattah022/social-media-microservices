@@ -1,22 +1,26 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, inject, signal, input, OnInit } from '@angular/core';
 import { PostCard } from '../post/post-card';
-import { PostData } from '../../shared/models/post-data';
+import { PostData } from '../../shared/models/posts/post-data.dto';
 import { FeedService } from '../../core/services/feed.service';
-import { finalize } from 'rxjs';
+import { finalize, Observable } from 'rxjs';
 import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
+import { PostService } from '@/core/services/post.service';
+import { CursorPaginationResponse } from '@/shared/models/cursor-pagination-response';
+import { InfiniteScrollDirective } from '@/shared/directives/infinite-scroll.directive';
+import { ZardIconComponent } from '@/shared/components/icon';
 
 @Component({
   selector: 'app-feed',
-  imports: [PostCard, LoadingSkeleton],
+  imports: [PostCard, LoadingSkeleton, InfiniteScrollDirective, ZardIconComponent],
   templateUrl: './feed.html',
   styleUrl: './feed.css',
-  host: {
-    '(window:scroll)': 'onScroll()'
-  }
 })
-export class Feed {
+export class Feed implements OnInit {
   private readonly feedService = inject(FeedService);
+  private readonly postService = inject(PostService);
   protected readonly PAGE_SIZE = 5;
+
+  userId = input<string>();
 
   protected readonly posts = signal<PostData[]>([]);
   protected readonly isLoading = signal(false);
@@ -24,7 +28,7 @@ export class Feed {
   protected readonly hasNext = signal(true);
   protected readonly error = signal<string | null>(null);
 
-  constructor() {
+  ngOnInit(): void {
     this.loadMore();
   }
 
@@ -36,27 +40,33 @@ export class Feed {
     this.isLoading.set(true);
     this.error.set(null);
 
-    this.feedService.getFeed(this.nextCursor(), this.PAGE_SIZE)
+    const cursor = this.nextCursor();
+    const userId = this.userId();
+
+    let posts$: Observable<CursorPaginationResponse<PostData>>;
+
+    if (userId) {
+      posts$ = this.postService.getUserPosts(
+        userId,
+        this.PAGE_SIZE,
+        cursor ?? undefined,
+      );
+    } else {
+      posts$ = this.feedService.getFeed(cursor, this.PAGE_SIZE);
+    }
+
+    posts$
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (response) => {
-          this.posts.update(current => [...current, ...response.data]);
+          this.posts.update((current) => [...current, ...response.data]);
           this.nextCursor.set(response.nextCursor);
           this.hasNext.set(response.hasNext);
         },
         error: (err) => {
-          this.error.set('Failed to load feed. Please try again.');
-          console.error('Error loading feed:', err);
-        }
+          this.error.set('Failed to load posts. Please try again.');
+          console.error('Error loading posts:', err);
+        },
       });
-  }
-
-  protected onScroll() {
-    const scrollPosition = window.scrollY + window.innerHeight;
-    const documentHeight = document.documentElement.scrollHeight;
-    const threshold = 200;
-    const atBottom = documentHeight - scrollPosition < threshold;
-
-    if (atBottom) this.loadMore();
   }
 }

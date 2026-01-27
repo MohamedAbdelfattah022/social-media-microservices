@@ -1,19 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
-import { LucideAngularModule, Menu, LogOut, User } from 'lucide-angular';
 import { AuthService } from '../../core/services/auth.service';
 import { RouterLink } from '@angular/router';
+import { ZardIconComponent } from "../components/icon";
 
 @Component({
   selector: 'app-profile-dropdown',
-  imports: [LucideAngularModule, RouterLink],
+  imports: [RouterLink, ZardIconComponent],
   templateUrl: './profile-dropdown.html',
   styleUrl: './profile-dropdown.css',
 })
 export class ProfileDropdown {
-  readonly menu = Menu;
-  readonly logOutIcon = LogOut;
-  readonly userIcon = User;
-
   authService = inject(AuthService);
   isMenuOpen = signal(false);
   userId: string = this.authService.decodeToken()?.sub;

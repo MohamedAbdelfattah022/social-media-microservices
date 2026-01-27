@@ -1,4 +1,4 @@
-import { PostData } from "./post-data";
+import { PostData } from "./posts/post-data.dto";
 
 export type CursorPaginationResponse<T> = {
   data: T[];

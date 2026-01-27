@@ -1,5 +1,5 @@
 import { Component, input, signal } from '@angular/core';
-import { PostData } from '../../shared/models/post-data';
+import { PostData } from '../../shared/models/posts/post-data.dto';
 import { computePostDate } from '../../shared/utils/compute-date-util';
 import { LucideAngularModule, Ellipsis, Heart, MessageCircle } from 'lucide-angular';
 
