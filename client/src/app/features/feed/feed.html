@@ -3,7 +3,7 @@
     <!-- Post Cards -->
     @for (post of posts(); track post.id) {
       <div>
-        <app-post-card [data]="post" />
+        <app-post-card [data]="post" (postDeleted)="onPostDeleted($event)" />
       </div>
     }
 

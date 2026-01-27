@@ -90,7 +90,9 @@ import {
   X,
   Zap,
   Menu,
-  RefreshCcw
+  RefreshCcw,
+  MessageCircle,
+  Pencil,
 } from 'lucide-angular';
 
 const DarkMode: LucideIconData = [
@@ -193,7 +195,9 @@ export const ZARD_ICONS = {
   'credit-card': CreditCard,
   activity: Activity,
   menu: Menu,
-  'refresh-cw': RefreshCcw
+  'refresh-cw': RefreshCcw,
+  'message-circle': MessageCircle,
+  pencil: Pencil,
 } as const satisfies Record<string, LucideIconData>;
 
 export declare type ZardIcon = keyof typeof ZARD_ICONS | LucideIconData;
