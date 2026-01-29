@@ -1,0 +1,55 @@
+<div class="comment-section">
+  <div class="comment-section-header">
+    <h3 class="section-title">Comments</h3>
+  </div>
+
+  <div class="add-comment-wrapper">
+    <app-add-comment
+      [postId]="postId()"
+      (commentSubmitted)="handleCommentSubmitted($event)"
+    />
+  </div>
+
+  @if (isLoading() && comments().length === 0) {
+    <div class="loading-state">
+      <span>Loading comments...</span>
+    </div>
+  }
+
+  @if (!isLoading() && comments().length === 0) {
+    <div class="empty-state">
+      <p>No comments yet. Be the first to comment!</p>
+    </div>
+  }
+
+  @if (comments().length > 0) {
+    <div class="comments-list">
+      @for (comment of comments(); track comment.id) {
+        <app-comment-item
+          [comment]="comment"
+          (commentDeleted)="handleCommentDeleted($event)"
+          (replyClicked)="handleReplyClicked($event)"
+          (viewRepliesClicked)="handleViewRepliesClicked($event)"
+        />
+      }
+    </div>
+  }
+
+  @if (hasMore() && !isLoading()) {
+    <div class="load-more-wrapper">
+      <button
+        type="button"
+        class="load-more-button"
+        (click)="loadMore()"
+      >
+        Load more comments
+      </button>
+    </div>
+  }
+
+  @if (isLoading() && comments().length > 0) {
+    <div class="loading-more">
+      <span>Loading more comments...</span>
+    </div>
+  }
+</div>

@@ -126,10 +126,24 @@
       <span>Like</span>
     </button>
     <button
-      class="flex flex-1 items-center justify-center gap-2.5 rounded-lg px-4 py-2.5 text-gray-600 transition-all duration-200 hover:bg-gray-50 active:scale-95 font-medium text-sm"
+      (click)="toggleComments()"
+      [class]="
+        'flex flex-1 items-center justify-center gap-2.5 rounded-lg px-4 py-2.5 transition-all duration-200 active:scale-95 font-medium text-sm ' +
+        (showComments() ? 'bg-blue-50 text-blue-600 hover:bg-blue-100' : 'text-gray-600 hover:bg-gray-50')
+      "
     >
       <z-icon zType="message-circle" class="h-5 w-5" />
       <span>Comment</span>
     </button>
   </div>
+
+  <!-- Comments Section -->
+  @if (showComments()) {
+    <div class="px-5 pb-5">
+      <app-comment-section
+        [postId]="data().id"
+        (commentCountUpdated)="handleCommentCountUpdated($event)"
+      />
+    </div>
+  }
 </div>

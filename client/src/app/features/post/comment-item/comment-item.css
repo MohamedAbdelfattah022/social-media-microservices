@@ -1,0 +1,134 @@
+.comment-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid rgb(229 231 235);
+}
+
+:global(.dark) .comment-item {
+  border-bottom-color: rgb(55 65 81);
+}
+
+.comment-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.comment-author {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.author-name {
+  font-weight: 600;
+  color: rgb(17 24 39);
+}
+
+:global(.dark) .author-name {
+  color: white;
+}
+
+.comment-date {
+  font-size: 0.875rem;
+  color: rgb(107 114 128);
+}
+
+:global(.dark) .comment-date {
+  color: rgb(156 163 175);
+}
+
+.edited-badge {
+  font-size: 0.75rem;
+  color: rgb(156 163 175);
+  font-style: italic;
+}
+
+:global(.dark) .edited-badge {
+  color: rgb(107 114 128);
+}
+
+.comment-menu {
+  margin-top: -0.25rem;
+}
+
+.menu-trigger {
+  padding: 0.25rem;
+  border-radius: 9999px;
+  color: rgb(107 114 128);
+  transition: background-color 0.2s;
+}
+
+.menu-trigger:hover {
+  background-color: rgb(243 244 246);
+}
+
+:global(.dark) .menu-trigger {
+  color: rgb(156 163 175);
+}
+
+:global(.dark) .menu-trigger:hover {
+  background-color: rgb(55 65 81);
+}
+
+.comment-content {
+  color: rgb(31 41 55);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+:global(.dark) .comment-content {
+  color: rgb(229 231 235);
+}
+
+.comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  color: rgb(75 85 99);
+  transition: color 0.2s;
+}
+
+.action-button:hover:not(:disabled) {
+  color: rgb(37 99 235);
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+:global(.dark) .action-button {
+  color: rgb(156 163 175);
+}
+
+:global(.dark) .action-button:hover:not(:disabled) {
+  color: rgb(96 165 250);
+}
+
+.action-button.liked {
+  color: rgb(239 68 68);
+}
+
+:global(.dark) .action-button.liked {
+  color: rgb(248 113 113);
+}
+
+.action-button.view-replies {
+  color: rgb(37 99 235);
+  font-weight: 500;
+}
+
+:global(.dark) .action-button.view-replies {
+  color: rgb(96 165 250);
+}

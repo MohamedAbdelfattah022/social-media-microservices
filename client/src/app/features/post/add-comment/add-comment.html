@@ -1,0 +1,29 @@
+<div class="add-comment-container">
+  <textarea
+    class="comment-input"
+    [placeholder]="placeholder()"
+    [(ngModel)]="content"
+    [maxlength]="maxLength"
+    rows="2"
+    [disabled]="isSubmitting()"
+  ></textarea>
+  
+  <div class="comment-actions">
+    <span class="character-count">
+      {{ content().length }} / {{ maxLength }}
+    </span>
+    
+    <button
+      type="button"
+      class="submit-button"
+      [disabled]="!content().trim() || isSubmitting()"
+      (click)="handleSubmit()"
+    >
+      @if (isSubmitting()) {
+        <span>Posting...</span>
+      } @else {
+        <span>Post</span>
+      }
+    </button>
+  </div>
+</div>
