@@ -1,0 +1,75 @@
+<div class="comment-item">
+  <div class="comment-header">
+    <div class="comment-author">
+      <span class="author-name">{{ comment().userId }}</span>
+      <span class="comment-date">{{ commentDate }}</span>
+      @if (comment().isEdited) {
+        <span class="edited-badge">(edited)</span>
+      }
+    </div>
+
+    @if (isOwnComment()) {
+      <div class="comment-menu">
+        <button
+          type="button"
+          z-menu
+          [zMenuTriggerFor]="commentMenu"
+          class="menu-trigger"
+        >
+          <z-icon zType="ellipsis" class="h-5 w-5" />
+        </button>
+
+        <ng-template #commentMenu>
+          <div z-menu-content class="w-40">
+            <button type="button" z-menu-item (click)="handleEdit()">
+              <z-icon zType="pencil" class="mr-2" />
+              <span>Edit</span>
+            </button>
+            <button type="button" z-menu-item zType="destructive" (click)="handleDelete()">
+              <z-icon zType="trash" class="mr-2" />
+              <span>Delete</span>
+            </button>
+          </div>
+        </ng-template>
+      </div>
+    }
+  </div>
+
+  <div class="comment-content">
+    {{ comment().content }}
+  </div>
+
+  <div class="comment-actions">
+    <button
+      type="button"
+      class="action-button"
+      [class.liked]="isLiked()"
+      [disabled]="isLiking()"
+      (click)="handleLike()"
+    >
+      <z-icon [zType]="isLiked() ? 'heart' : 'heart'" [class]="isLiked() ? 'fill-current' : ''" />
+      @if (comment().likeCount > 0) {
+        <span>{{ comment().likeCount }}</span>
+      }
+    </button>
+
+    <button
+      type="button"
+      class="action-button"
+      (click)="handleReply()"
+    >
+      <z-icon zType="message-circle" />
+      <span>Reply</span>
+    </button>
+
+    @if (comment().replyCount > 0) {
+      <button
+        type="button"
+        class="action-button view-replies"
+        (click)="handleViewReplies()"
+      >
+        <span>View {{ comment().replyCount }} {{ comment().replyCount === 1 ? 'reply' : 'replies' }}</span>
+      </button>
+    }
+  </div>
+</div>

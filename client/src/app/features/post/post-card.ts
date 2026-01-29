@@ -8,11 +8,13 @@ import { UpdatePostDialog } from './update-post-dialog/update-post-dialog';
 import { UpdatePostDto } from '@/shared/models/posts/update-post.dto';
 import { PostService } from '@/core/services/post.service';
 import { AuthService } from '@/core/services/auth.service';
+import { InteractionService } from '@/core/services/interaction.service';
+import { CommentSection } from './comment-section/comment-section';
 import { toast } from 'ngx-sonner';
 
 @Component({
   selector: 'app-post-card',
-  imports: [ZardIconComponent, ZardMenuImports],
+  imports: [ZardIconComponent, ZardMenuImports, CommentSection],
   templateUrl: './post-card.html',
   styleUrl: './post-card.css',
 })
@@ -20,6 +22,7 @@ export class PostCard {
   private readonly dialogService = inject(ZardDialogService);
   private readonly postService = inject(PostService);
   private readonly authService = inject(AuthService);
+  private readonly interactionService = inject(InteractionService);
 
   data = input.required<PostData>();
   postDeleted = output<number>();
@@ -27,8 +30,10 @@ export class PostCard {
   protected readonly postContent = signal<string>('');
   protected readonly postPrivacy = signal<string>('');
   protected readonly postIsEdited = signal<boolean>(false);
+  protected readonly showComments = signal<boolean>(false);
 
   isLiked = signal<boolean>(false);
+  isLiking = signal<boolean>(false);
   isUpdating = signal<boolean>(false);
   isDeleting = signal<boolean>(false);
 
@@ -50,8 +55,35 @@ export class PostCard {
   }
 
   handleLike() {
-    this.isLiked.set(!this.isLiked());
-    this.data().likeCount += this.isLiked() ? 1 : -1;
+    if (this.isLiking()) return;
+
+    const wasLiked = this.isLiked();
+    const originalCount = this.data().likeCount;
+
+    // Optimistic update
+    this.isLiked.set(!wasLiked);
+    this.data().likeCount += wasLiked ? -1 : 1;
+    this.isLiking.set(true);
+
+    const operation = wasLiked
+      ? this.interactionService.unlikePost(this.data().id)
+      : this.interactionService.likePost(this.data().id);
+
+    operation.subscribe({
+      next: () => {
+        this.isLiking.set(false);
+      },
+      error: (error) => {
+        console.error('Error toggling like:', error);
+        // Rollback on error
+        this.isLiked.set(wasLiked);
+        this.data().likeCount = originalCount;
+        this.isLiking.set(false);
+        toast.error('Failed to update like', {
+          description: 'Please try again.',
+        });
+      },
+    });
   }
 
   handleUpdate() {
@@ -123,5 +155,13 @@ export class PostCard {
         });
       }
     });
+  }
+
+  toggleComments() {
+    this.showComments.set(!this.showComments());
+  }
+
+  handleCommentCountUpdated(newCount: number) {
+    this.data().commentCount = newCount;
   }
 }
