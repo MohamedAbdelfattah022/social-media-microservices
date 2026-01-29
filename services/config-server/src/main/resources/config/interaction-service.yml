@@ -20,14 +20,16 @@ spring:
         format_sql: true
 
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
 
   grpc:
+    server:
+      port: ${INTERACTION_SERVICE_GRPC_PORT:9092}
     client:
       channels:
         post-service:
-          address: ${POST_SERVICE_GRPC_ADDRESS:localhost:9090}
+          address: ${POST_SERVICE_GRPC_HOST:localhost}:${POST_SERVICE_GRPC_PORT:9090}
           negotiation-type: plaintext
