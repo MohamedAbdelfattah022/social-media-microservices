@@ -39,4 +39,11 @@ public class PostMapper {
                 .updatedAt(postProjection.getUpdatedAt().toString())
                 .build();
     }
+
+    public PostDto toPostDto(PostProjection postProjection, long likeCount, long commentCount) {
+        PostDto dto = toPostDto(postProjection);
+        dto.setLikeCount(likeCount);
+        dto.setCommentCount(commentCount);
+        return dto;
+    }
 }

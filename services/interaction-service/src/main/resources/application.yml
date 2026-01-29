@@ -4,9 +4,3 @@ spring:
 
   config:
     import: "configserver:${CONFIG_SERVER_URL:http://localhost:8888/}"
-
-  grpc:
-    client:
-      channels:
-        post-service:
-          address: ${POST_SERVICE_GRPC_HOST:localhost}:${POST_SERVICE_GRPC_PORT:9090}

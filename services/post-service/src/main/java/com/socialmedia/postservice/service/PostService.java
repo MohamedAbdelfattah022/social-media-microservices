@@ -1,5 +1,6 @@
 package com.socialmedia.postservice.service;
 
+import com.socialmedia.grpc.interaction.PostInteractionCounts;
 import com.socialmedia.postservice.consts.EventType;
 import com.socialmedia.postservice.dto.CreatePostDto;
 import com.socialmedia.postservice.dto.CursorPageResponse;
@@ -8,6 +9,7 @@ import com.socialmedia.postservice.dto.UpdatePostDto;
 import com.socialmedia.postservice.dto.projection.PostProjection;
 import com.socialmedia.postservice.exception.ResourceNotFoundException;
 import com.socialmedia.postservice.exception.ResourceOwnershipException;
+import com.socialmedia.postservice.grpc.InteractionServiceClient;
 import com.socialmedia.postservice.mapper.EventFactory;
 import com.socialmedia.postservice.mapper.PostMapper;
 import com.socialmedia.postservice.repository.PostRepository;
@@ -22,6 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +33,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final MessageProducer messageProducer;
     private final EventFactory eventFactory;
+    private final InteractionServiceClient interactionServiceClient;
 
     @Transactional
     public Long createPost(CreatePostDto dto, AuthenticatedUser user) {
@@ -46,6 +50,13 @@ public class PostService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found");
 
         var postProjection = postRepository.findByIdAndCountLikesAndComments(postId);
+
+        Map<Long, PostInteractionCounts> countsMap = interactionServiceClient.getInteractionCounts(List.of(postId));
+        PostInteractionCounts counts = countsMap.get(postId);
+
+        if (counts != null) {
+            return postMapper.toPostDto(postProjection, counts.getLikeCount(), counts.getCommentCount());
+        }
         return postMapper.toPostDto(postProjection);
     }
 
@@ -64,9 +75,7 @@ public class PostService {
         boolean hasNext = projections.size() > pageSize;
         if (hasNext) projections = projections.subList(0, pageSize);
 
-        List<PostDto> posts = projections.stream()
-                .map(postMapper::toPostDto)
-                .toList();
+        List<PostDto> posts = enrichWithInteractionCounts(projections);
 
         String nextCursor = null;
         if (hasNext && !posts.isEmpty()) {
@@ -102,9 +111,7 @@ public class PostService {
                 userIds, cursorTime, lastId, pageSize + 1);
         boolean hasNext = projections.size() > pageSize;
         if (hasNext) projections = projections.subList(0, pageSize);
-        List<PostDto> posts = projections.stream()
-                .map(postMapper::toPostDto)
-                .toList();
+        List<PostDto> posts = enrichWithInteractionCounts(projections);
         String nextCursor = null;
         if (hasNext && !posts.isEmpty()) {
             var lastPost = posts.getLast();
@@ -155,5 +162,27 @@ public class PostService {
     private void verifyOwnership(String ownerId, String currentUserId) {
         if (!ownerId.equals(currentUserId))
             throw new ResourceOwnershipException("You do not have permission to perform this action");
+    }
+
+    private List<PostDto> enrichWithInteractionCounts(List<PostProjection> projections) {
+        if (projections.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> postIds = projections.stream()
+                .map(PostProjection::getId)
+                .toList();
+
+        Map<Long, PostInteractionCounts> countsMap = interactionServiceClient.getInteractionCounts(postIds);
+
+        return projections.stream()
+                .map(projection -> {
+                    PostInteractionCounts counts = countsMap.get(projection.getId());
+                    if (counts != null) {
+                        return postMapper.toPostDto(projection, counts.getLikeCount(), counts.getCommentCount());
+                    }
+                    return postMapper.toPostDto(projection);
+                })
+                .toList();
     }
 }

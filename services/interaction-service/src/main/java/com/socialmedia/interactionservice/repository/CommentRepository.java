@@ -11,6 +11,8 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
+    long countByPostId(Long postId);
+
     @Query(value = """
             SELECT c.id,
                    c.post_id,

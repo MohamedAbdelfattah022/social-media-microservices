@@ -1,5 +1,6 @@
 package com.socialmedia.postservice.config;
 
+import com.socialmedia.grpc.interaction.InteractionServiceGrpc;
 import com.socialmedia.grpc.user.UserServiceGrpc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,4 +15,12 @@ public class GrpcClientConfig {
                 channel.createChannel("user-service")
         );
     }
+
+    @Bean
+    public InteractionServiceGrpc.InteractionServiceBlockingStub interactionServiceStub(GrpcChannelFactory channel) {
+        return InteractionServiceGrpc.newBlockingStub(
+                channel.createChannel("interaction-service")
+        );
+    }
 }
+
