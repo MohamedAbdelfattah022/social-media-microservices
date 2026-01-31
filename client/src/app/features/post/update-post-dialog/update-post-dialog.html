@@ -30,22 +30,70 @@
         </select>
       </div>
 
-      <!-- Media URLs Info -->
-      @if (postData()!.mediaUrls && postData()!.mediaUrls!.length > 0) {
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            Media ({{ postData()!.mediaUrls!.length }})
-          </label>
+      <!-- Media Section -->
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700">
+          Media ({{ totalMediaCount }}/{{ maxFiles }})
+        </label>
+
+        <!-- Existing Media -->
+        @if (existingMediaUrls().length > 0) {
           <div class="grid grid-cols-4 gap-2">
-            @for (url of postData()!.mediaUrls; track url) {
-              <div class="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+            @for (url of existingMediaUrls(); let i = $index; track url) {
+              <div class="relative aspect-square rounded-lg overflow-hidden bg-gray-100 group">
                 <img [src]="url" alt="Media preview" class="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  (click)="removeExistingMedia(i)"
+                  class="absolute top-1 right-1 p-1 bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
               </div>
             }
           </div>
-          <p class="text-xs text-gray-500">Media editing is not supported yet</p>
-        </div>
-      }
+        }
+
+        <!-- New Files Preview -->
+        @if (selectedFiles().length > 0) {
+          <div class="grid grid-cols-4 gap-2 mt-2">
+            @for (item of selectedFiles(); let i = $index; track item.preview) {
+              <div class="relative aspect-square rounded-lg overflow-hidden bg-gray-100 group ring-2 ring-blue-500">
+                <img [src]="item.preview" alt="New file preview" class="w-full h-full object-cover" />
+                <div class="absolute top-1 left-1 px-1.5 py-0.5 bg-blue-500 rounded text-white text-xs font-medium">New</div>
+                <button
+                  type="button"
+                  (click)="removeNewFile(i)"
+                  class="absolute top-1 right-1 p-1 bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Add Media Button -->
+        @if (totalMediaCount < maxFiles) {
+          <label class="inline-flex items-center gap-2 px-3 py-2 mt-2 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 text-gray-700 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <span class="text-sm font-medium">Add Photo</span>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              class="hidden"
+              (change)="onFileSelected($event)"
+            />
+          </label>
+        }
+      </div>
     </div>
 
     <!-- Action Buttons -->
@@ -53,19 +101,20 @@
       <button
         type="button"
         (click)="onCancel()"
-        class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        [disabled]="isUploading()"
+        class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
       >
         Cancel
       </button>
       <button
         type="submit"
-        [disabled]="form.invalid"
+        [disabled]="form.invalid || isUploading()"
         [class]="
           'px-5 py-2.5 text-sm font-medium text-white rounded-lg transition-colors ' +
-          (form.invalid ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700')
+          (form.invalid || isUploading() ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700')
         "
       >
-        Update Post
+        {{ isUploading() ? 'Uploading...' : 'Update Post' }}
       </button>
     </div>
   </form>

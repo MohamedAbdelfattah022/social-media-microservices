@@ -1,7 +1,7 @@
-import { Privacy } from "./privacy.enum";
+import { Privacy } from './privacy.enum';
 
 export type CreatePostDto = {
   content?: string;
-  mediaUrls?: string[];
+  fileIds?: string[];
   privacy?: Privacy;
 };
