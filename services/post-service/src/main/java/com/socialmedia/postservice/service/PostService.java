@@ -10,6 +10,7 @@ import com.socialmedia.postservice.dto.projection.PostProjection;
 import com.socialmedia.postservice.exception.ResourceNotFoundException;
 import com.socialmedia.postservice.exception.ResourceOwnershipException;
 import com.socialmedia.postservice.grpc.InteractionServiceClient;
+import com.socialmedia.postservice.grpc.MinioServiceClient;
 import com.socialmedia.postservice.mapper.EventFactory;
 import com.socialmedia.postservice.mapper.PostMapper;
 import com.socialmedia.postservice.repository.PostRepository;
@@ -22,9 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -34,9 +33,12 @@ public class PostService {
     private final MessageProducer messageProducer;
     private final EventFactory eventFactory;
     private final InteractionServiceClient interactionServiceClient;
+    private final MinioServiceClient minioServiceClient;
 
     @Transactional
     public Long createPost(CreatePostDto dto, AuthenticatedUser user) {
+        validateFileIds(dto.getFileIds());
+
         var post = postMapper.toPost(dto, user);
         var savedPost = postRepository.save(post);
         var event = eventFactory.createEvent(savedPost, EventType.POST_CREATED);
@@ -51,13 +53,16 @@ public class PostService {
 
         var postProjection = postRepository.findByIdAndCountLikesAndComments(postId);
 
+        List<UUID> fileIds = postMapper.getFileIds(postProjection);
+        List<String> mediaUrls = minioServiceClient.getFileUrlsAsList(fileIds);
+
         Map<Long, PostInteractionCounts> countsMap = interactionServiceClient.getInteractionCounts(List.of(postId));
         PostInteractionCounts counts = countsMap.get(postId);
 
         if (counts != null) {
-            return postMapper.toPostDto(postProjection, counts.getLikeCount(), counts.getCommentCount());
+            return postMapper.toPostDto(postProjection, mediaUrls, counts.getLikeCount(), counts.getCommentCount());
         }
-        return postMapper.toPostDto(postProjection);
+        return postMapper.toPostDto(postProjection, mediaUrls);
     }
 
     public CursorPageResponse<PostDto> getUserPosts(String userId, String cursor, Integer pageSize) {
@@ -75,7 +80,7 @@ public class PostService {
         boolean hasNext = projections.size() > pageSize;
         if (hasNext) projections = projections.subList(0, pageSize);
 
-        List<PostDto> posts = enrichWithInteractionCounts(projections);
+        List<PostDto> posts = enrichWithInteractionCountsAndUrls(projections);
 
         String nextCursor = null;
         if (hasNext && !posts.isEmpty()) {
@@ -111,7 +116,7 @@ public class PostService {
                 userIds, cursorTime, lastId, pageSize + 1);
         boolean hasNext = projections.size() > pageSize;
         if (hasNext) projections = projections.subList(0, pageSize);
-        List<PostDto> posts = enrichWithInteractionCounts(projections);
+        List<PostDto> posts = enrichWithInteractionCountsAndUrls(projections);
         String nextCursor = null;
         if (hasNext && !posts.isEmpty()) {
             var lastPost = posts.getLast();
@@ -125,27 +130,40 @@ public class PostService {
                 .build();
     }
 
+    @Transactional
     public void updatePost(UpdatePostDto dto, Long postId, String userId) {
         var post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
         verifyOwnership(post.getUserId(), userId);
 
+        if (dto.getFileIds() != null) {
+            validateFileIds(dto.getFileIds());
+        }
+
         post.setEdited(true);
         post.setContent(dto.getContent() != null ? dto.getContent() : post.getContent());
         post.setPrivacy(dto.getPrivacy() != null ? dto.getPrivacy() : post.getPrivacy());
-        post.setMediaUrls(dto.getMediaUrls() != null ? dto.getMediaUrls() : post.getMediaUrls());
+        post.setFileIds(dto.getFileIds() != null ? dto.getFileIds() : post.getFileIds());
 
         postRepository.save(post);
     }
 
+    @Transactional
     public void deletePost(Long postId, String userId) {
         var post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
         verifyOwnership(post.getUserId(), userId);
 
+        List<UUID> fileIds = post.getFileIds();
+
         postRepository.deleteById(postId);
+
+        if (fileIds != null && !fileIds.isEmpty()) {
+            var event = eventFactory.createPostDeletedEvent(postId, fileIds);
+            messageProducer.sendPostDeletedMessage(event);
+        }
     }
 
 
@@ -164,7 +182,19 @@ public class PostService {
             throw new ResourceOwnershipException("You do not have permission to perform this action");
     }
 
-    private List<PostDto> enrichWithInteractionCounts(List<PostProjection> projections) {
+    private void validateFileIds(List<UUID> fileIds) {
+        if (fileIds == null || fileIds.isEmpty()) {
+            return;
+        }
+
+        List<String> invalidFileIds = minioServiceClient.getInvalidFileIds(fileIds);
+        if (!invalidFileIds.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Invalid file IDs: " + String.join(", ", invalidFileIds));
+        }
+    }
+
+    private List<PostDto> enrichWithInteractionCountsAndUrls(List<PostProjection> projections) {
         if (projections.isEmpty()) {
             return List.of();
         }
@@ -175,13 +205,26 @@ public class PostService {
 
         Map<Long, PostInteractionCounts> countsMap = interactionServiceClient.getInteractionCounts(postIds);
 
+        List<UUID> allFileIds = projections.stream()
+                .flatMap(p -> postMapper.getFileIds(p).stream())
+                .distinct()
+                .toList();
+
+        Map<UUID, String> fileUrlMap = minioServiceClient.getFileUrls(allFileIds);
+
         return projections.stream()
                 .map(projection -> {
+                    List<UUID> fileIds = postMapper.getFileIds(projection);
+                    List<String> mediaUrls = fileIds.stream()
+                            .map(fileUrlMap::get)
+                            .filter(Objects::nonNull)
+                            .toList();
+
                     PostInteractionCounts counts = countsMap.get(projection.getId());
                     if (counts != null) {
-                        return postMapper.toPostDto(projection, counts.getLikeCount(), counts.getCommentCount());
+                        return postMapper.toPostDto(projection, mediaUrls, counts.getLikeCount(), counts.getCommentCount());
                     }
-                    return postMapper.toPostDto(projection);
+                    return postMapper.toPostDto(projection, mediaUrls);
                 })
                 .toList();
     }

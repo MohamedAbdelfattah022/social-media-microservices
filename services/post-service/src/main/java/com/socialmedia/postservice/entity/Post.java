@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Builder
 @Entity
@@ -44,12 +45,12 @@ public class Post {
 
     @ElementCollection
     @CollectionTable(
-            name = "post_media_urls",
+            name = "post_file_ids",
             joinColumns = @JoinColumn(name = "post_id")
     )
-    @Column(name = "media_url")
+    @Column(name = "file_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private List<String> mediaUrls;
+    private List<UUID> fileIds;
 
     @Enumerated(EnumType.STRING)
     private PrivacySettings privacy = PrivacySettings.PUBLIC;

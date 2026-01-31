@@ -1,6 +1,7 @@
 package com.socialmedia.postservice.config;
 
 import com.socialmedia.grpc.interaction.InteractionServiceGrpc;
+import com.socialmedia.grpc.minio.FileServiceGrpc;
 import com.socialmedia.grpc.user.UserServiceGrpc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,13 @@ public class GrpcClientConfig {
     public InteractionServiceGrpc.InteractionServiceBlockingStub interactionServiceStub(GrpcChannelFactory channel) {
         return InteractionServiceGrpc.newBlockingStub(
                 channel.createChannel("interaction-service")
+        );
+    }
+
+    @Bean
+    public FileServiceGrpc.FileServiceBlockingStub fileServiceStub(GrpcChannelFactory channel) {
+        return FileServiceGrpc.newBlockingStub(
+                channel.createChannel("minio-service")
         );
     }
 }

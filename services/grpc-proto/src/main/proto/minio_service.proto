@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.socialmedia.grpc.minio";
+option java_outer_classname = "MinioServiceProto";
+
+package minio;
+
+service FileService {
+  rpc ValidateFileIds(ValidateFileIdsRequest) returns (ValidateFileIdsResponse) {}
+  rpc GetFileUrls(GetFileUrlsRequest) returns (GetFileUrlsResponse) {}
+  rpc DeleteFiles(DeleteFilesRequest) returns (DeleteFilesResponse) {}
+}
+
+message ValidateFileIdsRequest {
+  repeated string file_ids = 1;
+}
+
+message ValidateFileIdsResponse {
+  bool all_valid = 1;
+  repeated string invalid_file_ids = 2;
+}
+
+message GetFileUrlsRequest {
+  repeated string file_ids = 1;
+}
+
+message FileUrlMapping {
+  string file_id = 1;
+  string url = 2;
+  string content_type = 3;
+  string original_filename = 4;
+}
+
+message GetFileUrlsResponse {
+  repeated FileUrlMapping file_urls = 1;
+}
+
+message DeleteFilesRequest {
+  repeated string file_ids = 1;
+}
+
+message DeleteFilesResponse {
+  bool success = 1;
+  repeated string failed_file_ids = 2;
+}

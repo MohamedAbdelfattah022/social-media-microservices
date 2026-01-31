@@ -24,9 +24,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                     p.is_edited,
                     p.created_at,
                     p.updated_at,
-                    (SELECT COALESCE(array_agg(media_url), '{}')
-                     FROM post_media_urls
-                     WHERE post_id = p.id) AS media_urls
+                    (SELECT COALESCE(array_agg(file_id), '{}')
+                     FROM post_file_ids
+                     WHERE post_id = p.id) AS file_ids
                 FROM posts p
                 WHERE p.id = :id
                 AND p.privacy = 'PUBLIC'
@@ -46,9 +46,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                     p.is_edited,
                     p.created_at,
                     p.updated_at,
-                    (SELECT COALESCE(array_agg(media_url), '{}')
-                     FROM post_media_urls
-                     WHERE post_id = p.id) AS media_urls
+                    (SELECT COALESCE(array_agg(file_id), '{}')
+                     FROM post_file_ids
+                     WHERE post_id = p.id) AS file_ids
                 FROM posts p
                 WHERE p.user_id = :userId
                 AND p.privacy = 'PUBLIC'
@@ -75,9 +75,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                     p.is_edited,
                     p.created_at,
                     p.updated_at,
-                    (SELECT COALESCE(array_agg(media_url), '{}')
-                     FROM post_media_urls
-                     WHERE post_id = p.id) AS media_urls
+                    (SELECT COALESCE(array_agg(file_id), '{}')
+                     FROM post_file_ids
+                     WHERE post_id = p.id) AS file_ids
                 FROM posts p
                 WHERE p.user_id IN (:userIds)
                 AND p.privacy = 'PUBLIC'

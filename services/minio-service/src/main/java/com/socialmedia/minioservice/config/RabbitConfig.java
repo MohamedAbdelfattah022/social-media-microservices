@@ -1,4 +1,4 @@
-package com.socialmedia.postservice.config;
+package com.socialmedia.minioservice.config;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -12,15 +12,6 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitConfig {
-    @Bean
-    public Queue commentNotificationQueue() {
-        return new Queue("commentNotificationQueue", true);
-    }
-
-    @Bean
-    public Queue commentFeedQueue() {
-        return new Queue("commentFeedQueue", true);
-    }
 
     @Bean
     public Queue postDeletedQueue() {
@@ -28,23 +19,8 @@ public class RabbitConfig {
     }
 
     @Bean
-    public FanoutExchange fanoutExchange() {
-        return new FanoutExchange("commentFanoutExchange");
-    }
-
-    @Bean
     public FanoutExchange postDeletedExchange() {
         return new FanoutExchange("postDeletedExchange");
-    }
-
-    @Bean
-    public Binding notificationBinding(Queue commentNotificationQueue, FanoutExchange fanoutExchange) {
-        return BindingBuilder.bind(commentNotificationQueue).to(fanoutExchange);
-    }
-
-    @Bean
-    public Binding feedBinding(Queue commentFeedQueue, FanoutExchange fanoutExchange) {
-        return BindingBuilder.bind(commentFeedQueue).to(fanoutExchange);
     }
 
     @Bean

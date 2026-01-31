@@ -12,13 +12,18 @@ spring:
 
   grpc:
     server:
-      port: ${POST_SERVICE_GRPC_PORT:9090}
+      port: ${POST_GRPC_SERVER_PORT:9090}
     client:
       channels:
         user-service:
-          address: ${USER_SERVICE_GRPC_HOST:localhost}:${USER_SERVICE_GRPC_PORT:9091}
+          address: localhost:${USER_GRPC_SERVER_PORT:9091}
+          negotiation-type: plaintext
         interaction-service:
-          address: ${INTERACTION_SERVICE_GRPC_HOST:localhost}:${INTERACTION_SERVICE_GRPC_PORT:9092}
+          address: localhost:${INTERACTION_GRPC_SERVER_PORT:9092}
+          negotiation-type: plaintext
+        minio-service:
+          address: localhost:${MINIO_GRPC_SERVER_PORT:9093}
+          negotiation-type: plaintext
 
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5434/postdb}
