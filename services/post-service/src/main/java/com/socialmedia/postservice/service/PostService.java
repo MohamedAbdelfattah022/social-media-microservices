@@ -6,7 +6,11 @@ import com.socialmedia.postservice.dto.CreatePostDto;
 import com.socialmedia.postservice.dto.CursorPageResponse;
 import com.socialmedia.postservice.dto.PostDto;
 import com.socialmedia.postservice.dto.UpdatePostDto;
+import com.socialmedia.postservice.dto.event.NotificationEvent;
+import com.socialmedia.postservice.dto.event.NotificationEventType;
+import com.socialmedia.postservice.dto.event.ResourceType;
 import com.socialmedia.postservice.dto.projection.PostProjection;
+import com.socialmedia.postservice.entity.Post;
 import com.socialmedia.postservice.exception.ResourceNotFoundException;
 import com.socialmedia.postservice.exception.ResourceOwnershipException;
 import com.socialmedia.postservice.grpc.InteractionServiceClient;
@@ -22,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -43,6 +48,8 @@ public class PostService {
         var savedPost = postRepository.save(post);
         var event = eventFactory.createEvent(savedPost, EventType.POST_CREATED);
         messageProducer.sendMessage(event);
+
+        publishPostCreatedNotification(savedPost, user);
 
         return savedPost.getId();
     }
@@ -227,5 +234,31 @@ public class PostService {
                     return postMapper.toPostDto(projection, mediaUrls);
                 })
                 .toList();
+    }
+
+    private void publishPostCreatedNotification(Post post, AuthenticatedUser user) {
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("authorUsername", user.username());
+        metadata.put("authorDisplayName", user.firstName() + " " + user.lastName());
+        metadata.put("authorProfilePicture", user.profilePictureUrl());
+
+        String preview = post.getContent() != null && post.getContent().length() > 100
+                ? post.getContent().substring(0, 100) + "..."
+                : post.getContent();
+        metadata.put("postPreview", preview);
+
+        NotificationEvent event = NotificationEvent.builder()
+                .eventId(UUID.randomUUID().toString())
+                .eventType(NotificationEventType.POST_CREATED)
+                .sourceService("post-service")
+                .timestamp(Instant.now())
+                .actorUserId(user.id())
+                .targetUserId(null)
+                .resourceType(ResourceType.POST)
+                .resourceId(post.getId().toString())
+                .metadata(metadata)
+                .build();
+
+        messageProducer.publishNotificationEvent(event, "post.created");
     }
 }

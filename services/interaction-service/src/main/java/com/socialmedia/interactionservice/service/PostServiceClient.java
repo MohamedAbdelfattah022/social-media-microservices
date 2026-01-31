@@ -2,11 +2,15 @@ package com.socialmedia.interactionservice.service;
 
 import com.socialmedia.grpc.post.CheckPostExistsRequest;
 import com.socialmedia.grpc.post.CheckPostExistsResponse;
+import com.socialmedia.grpc.post.GetPostOwnerRequest;
+import com.socialmedia.grpc.post.GetPostOwnerResponse;
 import com.socialmedia.grpc.post.PostServiceGrpc;
 import com.socialmedia.interactionservice.exception.PostNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -33,5 +37,20 @@ public class PostServiceClient {
 
         CheckPostExistsResponse response = postServiceStub.checkPostExists(request);
         return response.getExists();
+    }
+
+    public Optional<String> getPostOwnerId(Long postId) {
+        log.debug("Getting post owner via gRPC: {}", postId);
+
+        GetPostOwnerRequest request = GetPostOwnerRequest.newBuilder()
+                .setPostId(postId)
+                .build();
+
+        GetPostOwnerResponse response = postServiceStub.getPostOwner(request);
+
+        if (response.getFound()) {
+            return Optional.of(response.getUserId());
+        }
+        return Optional.empty();
     }
 }

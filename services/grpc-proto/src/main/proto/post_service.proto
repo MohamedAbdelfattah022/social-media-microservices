@@ -9,6 +9,7 @@ package post;
 service PostService {
   rpc CheckPostExists(CheckPostExistsRequest) returns (CheckPostExistsResponse) {}
   rpc GetPostsByUserIds(GetPostsByUserIdsRequest) returns (GetPostsByUserIdsResponse) {}
+  rpc GetPostOwner(GetPostOwnerRequest) returns (GetPostOwnerResponse) {}
 }
 
 message CheckPostExistsRequest {
@@ -17,6 +18,15 @@ message CheckPostExistsRequest {
 
 message CheckPostExistsResponse {
   bool exists = 1;
+}
+
+message GetPostOwnerRequest {
+  int64 post_id = 1;
+}
+
+message GetPostOwnerResponse {
+  string user_id = 1;
+  bool found = 2;
 }
 
 message GetPostsByUserIdsRequest {

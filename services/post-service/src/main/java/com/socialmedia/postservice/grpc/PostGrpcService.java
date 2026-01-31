@@ -76,4 +76,24 @@ public class PostGrpcService extends PostServiceGrpc.PostServiceImplBase {
         responseObserver.onNext(responseBuilder.build());
         responseObserver.onCompleted();
     }
+
+    @Override
+    public void getPostOwner(GetPostOwnerRequest request, StreamObserver<GetPostOwnerResponse> responseObserver) {
+        long postId = request.getPostId();
+        log.debug("Getting post owner for postId: {}", postId);
+
+        var post = postRepository.findById(postId);
+
+        GetPostOwnerResponse.Builder responseBuilder = GetPostOwnerResponse.newBuilder();
+        if (post.isPresent()) {
+            responseBuilder.setUserId(post.get().getUserId());
+            responseBuilder.setFound(true);
+        } else {
+            responseBuilder.setUserId("");
+            responseBuilder.setFound(false);
+        }
+
+        responseObserver.onNext(responseBuilder.build());
+        responseObserver.onCompleted();
+    }
 }
