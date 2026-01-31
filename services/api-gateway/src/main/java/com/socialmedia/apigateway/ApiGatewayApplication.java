@@ -32,6 +32,10 @@ public class ApiGatewayApplication {
                         .path("/api/feed/**")
                         .uri("lb://FEED-SERVICE")
                 )
+                .route(p -> p
+                        .path("/api/files/**")
+                        .uri("lb://MINIO-SERVICE")
+                )
                 .build();
     }
 }

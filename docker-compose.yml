@@ -1,4 +1,24 @@
 services:
+  minio:
+    image: minio/minio:latest
+    container_name: Minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - social-media-network
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   user-db-postgres:
     image: postgres:latest
     container_name: user-db-postgres
@@ -78,6 +98,26 @@ services:
       timeout: 5s
       retries: 5
 
+  minio-db-postgres:
+    image: postgres:latest
+    container_name: minio-db-postgres
+    environment:
+      POSTGRES_DB: miniodb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - minio_db_postgres_data:/var/lib/postgresql/data
+    networks:
+      - social-media-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
   rabbitmq:
     image: rabbitmq:4-management
     container_name: rabbitMQ
@@ -142,6 +182,10 @@ services:
 
 
 volumes:
+  minio_data:
+    driver: local
+  minio_db_postgres_data:
+    driver: local
   user_db_postgres_data:
     driver: local
   post_db_postgres_data:
