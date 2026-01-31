@@ -2,9 +2,9 @@ package com.socialmedia.postservice.dto;
 
 import com.socialmedia.postservice.enums.PrivacySettings;
 import lombok.*;
-import org.hibernate.validator.constraints.URL;
 
 import java.util.List;
+import java.util.UUID;
 
 @Builder
 @Getter @Setter
@@ -12,6 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 public class UpdatePostDto {
     private String content;
-    private List<@URL String> mediaUrls;
+    private List<UUID> fileIds;
     private PrivacySettings privacy;
 }

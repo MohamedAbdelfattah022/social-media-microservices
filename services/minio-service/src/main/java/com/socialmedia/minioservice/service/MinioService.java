@@ -4,11 +4,13 @@ import com.socialmedia.minioservice.config.MinioProperties;
 import com.socialmedia.minioservice.entity.FileMetadata;
 import com.socialmedia.minioservice.repository.FileMetadataRepository;
 import io.minio.GetObjectArgs;
+import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.MinioException;
+import io.minio.http.Method;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -163,5 +166,25 @@ public class MinioService {
     public FileMetadata getFileMetadata(UUID fileId) {
         return fileMetadataRepository.findById(fileId)
                 .orElseThrow(() -> new RuntimeException("File not found with ID: " + fileId));
+    }
+
+    public String getPresignedUrl(UUID fileId) {
+        FileMetadata metadata = getFileMetadata(fileId);
+        try {
+            String url = minioClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .method(Method.GET)
+                            .bucket(metadata.getBucketName())
+                            .object(metadata.getStoredFilename())
+                            .expiry(props.getPresignedUrlExpiryMinutes(), TimeUnit.MINUTES)
+                            .build()
+            );
+            log.debug("Generated presigned URL for file {} with expiry {} minutes", 
+                    fileId, props.getPresignedUrlExpiryMinutes());
+            return url;
+        } catch (Exception e) {
+            log.error("Error generating presigned URL for file {}: {}", fileId, e.getMessage(), e);
+            throw new RuntimeException("Error generating presigned URL", e);
+        }
     }
 }

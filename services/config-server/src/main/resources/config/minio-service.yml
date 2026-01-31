@@ -24,9 +24,20 @@ spring:
       max-file-size: 25MB
       max-request-size: 25MB
 
+  grpc:
+    server:
+      port: ${MINIO_GRPC_SERVER_PORT:9093}
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
 minio:
   url: ${MINIO_URL:http://localhost:9000}
   access-key: ${MINIO_ACCESS_KEY:minioadmin}
   secret-key: ${MINIO_SECRET_KEY:minioadmin123}
   bucket: ${MINIO_BUCKET:uploads}
   region: ${MINIO_REGION:us-east-1}
+  presigned-url-expiry-minutes: ${MINIO_PRESIGNED_URL_EXPIRY:60}

@@ -1,6 +1,7 @@
 package com.socialmedia.postservice.dto.projection;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public interface PostProjection {
     Long getId();
@@ -19,7 +20,7 @@ public interface PostProjection {
 
     String getPrivacy();
 
-    String[] getMediaUrls();
+    UUID[] getFileIds();
 
     Boolean getIsEdited();
 
