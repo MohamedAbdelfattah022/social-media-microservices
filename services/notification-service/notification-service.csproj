@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>notification_service</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <SteeltoeVersion>4.1.*</SteeltoeVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0"/>
+        <PackageReference Include="Scalar.AspNetCore" Version="2.12.36"/>
+        <PackageReference Include="Serilog.AspNetCore" Version="10.0.0"/>
+
+        <PackageReference Include="WolverineFx" Version="5.14.0"/>
+        <PackageReference Include="WolverineFx.RabbitMQ" Version="5.14.0"/>
+
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Steeltoe.Configuration.ConfigServer" Version="$(SteeltoeVersion)"/>
+        <PackageReference Include="Steeltoe.Discovery.Eureka" Version="$(SteeltoeVersion)"/>
+    </ItemGroup>
+</Project>

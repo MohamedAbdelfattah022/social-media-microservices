@@ -14,7 +14,7 @@ services:
     networks:
       - social-media-network
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: [ "CMD", "mc", "ready", "local" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -117,6 +117,24 @@ services:
       timeout: 5s
       retries: 5
 
+  notification-db-postgres:
+    image: postgres:latest
+    container_name: notification-db-postgres
+    environment:
+      POSTGRES_DB: notificationdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5437:5432"
+    volumes:
+      - notification_db_postgres_data:/var/lib/postgresql/data
+    networks:
+      - social-media-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:4-management
@@ -172,7 +190,7 @@ services:
       user-db-postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3;if [ $? -eq 0 ]; then echo 'Healthcheck Successful';exit 0;else echo 'Healthcheck Failed';exit 1;fi;"]
+      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3;if [ $? -eq 0 ]; then echo 'Healthcheck Successful';exit 0;else echo 'Healthcheck Failed';exit 1;fi;" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -182,6 +200,8 @@ services:
 
 
 volumes:
+  notification_db_postgres_data:
+    driver: local
   minio_data:
     driver: local
   minio_db_postgres_data:

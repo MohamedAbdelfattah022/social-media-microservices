@@ -1,0 +1,24 @@
+server:
+  port: 8086
+
+
+rabbitmq:
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+
+ConnectionStrings:
+  DefaultConnection: Host=localhost;Port=5437;Database=notificationdb;Username=postgres;Password=postgres;
+
+eureka:
+  client:
+    enabled: true
+    serviceUrl: http://localhost:8761/eureka/
+    shouldFetchRegistry: false
+    shouldRegisterWithEureka: true
+    validateCertificates: false
+
+  instance:
+    ipAddress: localhost
+    preferIpAddress: true
