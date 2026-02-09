@@ -1,0 +1,32 @@
+<div class="relative">
+  <button
+    (click)="toggleDropdown()"
+    class="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+    [attr.aria-label]="
+      'Notifications' + (unreadCount() > 0 ? ' (' + unreadCount() + ' unread)' : '')
+    "
+  >
+    <div class="relative inline-block">
+      <z-icon zType="bell" class="mt-1 text-gray-600 dark:text-gray-300" zSize="xl" />
+
+      @if (unreadCount() > 0) {
+        <span
+          class="absolute -top-1 -right-1 flex items-center justify-center w-4.5 h-4.5 text-[10px] font-bold text-white bg-red-500 rounded-full border-2 border-white dark:border-gray-900"
+        >
+          {{ displayCount() }}
+        </span>
+      }
+    </div>
+
+    @if (!connected()) {
+      <span
+        class="absolute bottom-1 right-1 w-2 h-2 bg-yellow-500 rounded-full"
+        title="Reconnecting..."
+      ></span>
+    }
+  </button>
+
+  @if (isOpen()) {
+    <app-notification-dropdown (close)="closeDropdown()" class="absolute right-0 mt-2 z-50" />
+  }
+</div>

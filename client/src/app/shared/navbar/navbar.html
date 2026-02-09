@@ -4,28 +4,34 @@
       <!-- logo -->
       <div class="shrink-0 flex items-center gap-2 cursor-pointer" routerLink="/">
         <div class="w-10 h-10 sm:w-14 sm:h-14">
-          <img src="/logo.png" alt="Logo">
+          <img src="/logo.png" alt="Logo" />
         </div>
         <span class="font-bold text-lg sm:text-xl tracking-tight text-slate-800">Social Mesh</span>
       </div>
 
       <!-- auth buttons -->
-      @if(!isLoggedIn()) {
-      <div class="flex items-center space-x-2 sm:space-x-4">
-        <a href="#" class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors"
-          routerLink="/login">Log in</a>
-        <a href="#"
-          class="inline-flex items-center justify-center px-3 py-1.5 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-sm hover:shadow-md"
-          routerLink="/signup">
-          Sign up
-        </a>
-      </div>
+      @if (!isLoggedIn()) {
+        <div class="flex items-center space-x-2 sm:space-x-4">
+          <a
+            href="#"
+            class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors"
+            routerLink="/login"
+            >Log in</a
+          >
+          <a
+            href="#"
+            class="inline-flex items-center justify-center px-3 py-1.5 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-sm hover:shadow-md"
+            routerLink="/signup"
+          >
+            Sign up
+          </a>
+        </div>
       } @else {
-      <div class="flex items-center">
-        <app-profile-dropdown></app-profile-dropdown>
-      </div>
+        <div class="flex items-center gap-2">
+          <app-notification></app-notification>
+          <app-profile-dropdown></app-profile-dropdown>
+        </div>
       }
-
     </div>
   </div>
 </nav>
