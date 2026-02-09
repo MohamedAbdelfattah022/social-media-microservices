@@ -36,6 +36,10 @@ public class ApiGatewayApplication {
                         .path("/api/files/**")
                         .uri("lb://MINIO-SERVICE")
                 )
+                .route("notification-service", p -> p
+                        .path("/api/notifications/**")
+                        .uri("lb://NOTIFICATION-SERVICE")
+                )
                 .build();
     }
 }
