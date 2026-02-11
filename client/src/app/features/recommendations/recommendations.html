@@ -6,20 +6,38 @@
     </div>
     <div class="space-y-3">
       @for (user of suggestions; track user.id) {
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <img [src]="user.profilePictureUrl" [alt]="user.username"
-            class="h-10 w-10 rounded-full border-2 border-gray-100 object-cover" />
-          <div>
-            <p class="text-sm font-semibold text-gray-900">{{ user.firstName }} {{ user.lastName }}</p>
-            <p class="text-xs text-gray-500">@{{ user.username }}</p>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <img
+              [src]="user.profilePictureUrl"
+              [alt]="user.username"
+              class="h-10 w-10 rounded-full border-2 border-gray-100 object-cover"
+            />
+            <div>
+              <p class="text-sm font-semibold text-gray-900">
+                {{ user.firstName }} {{ user.lastName }}
+              </p>
+              <p class="text-xs text-gray-500">@{{ user.username }}</p>
+            </div>
           </div>
+          <button
+            (click)="toggleFollow(user.id)"
+            (mouseenter)="hoveredUser = user.id"
+            (mouseleave)="hoveredUser = null"
+            [ngClass]="{
+              'bg-blue-600 text-white hover:bg-blue-700': !isFollowed(user.id),
+              'border border-gray-300 text-gray-700 bg-white':
+                isFollowed(user.id) && hoveredUser !== user.id,
+              'border border-red-300 text-red-600 bg-red-50':
+                isFollowed(user.id) && hoveredUser === user.id,
+            }"
+            class="rounded-lg px-4 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-w-[100px]"
+          >
+            {{ getButtonLabel(user.id) }}
+          </button>
         </div>
-        <button
-          class="rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-          Follow
-        </button>
-      </div>
+      } @empty {
+        <p class="text-sm text-gray-500 text-center py-2">No suggestions available</p>
       }
     </div>
   </div>

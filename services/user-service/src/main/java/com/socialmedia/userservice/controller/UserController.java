@@ -24,6 +24,12 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserProfile());
     }
 
+    @GetMapping("/suggestions")
+    public ResponseEntity<List<UserProfileDto>> getSuggestions(
+            @RequestParam(defaultValue = "5") int limit) {
+        return ResponseEntity.ok(socialGraphService.getSuggestions(limit));
+    }
+
     @GetMapping("/{userId}")
     public ResponseEntity<UserProfileDto> getUserProfile(@PathVariable String userId) {
         return ResponseEntity.ok(userService.getUserProfile(userId));

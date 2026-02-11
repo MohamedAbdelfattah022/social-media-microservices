@@ -96,6 +96,24 @@ public class SocialGraphService {
         return userGraphRepository.isFollowing(followerId, followeeId);
     }
 
+    public List<UserProfileDto> getSuggestions(int limit) {
+        String userId = userContext.getCurrentUserId();
+        List<UserNode> suggestionNodes = userGraphRepository.findSuggestions(userId, limit);
+
+        List<String> suggestionIds = suggestionNodes.stream()
+                .map(UserNode::getUserId)
+                .toList();
+
+        return suggestionIds.stream()
+                .map(id -> userProfileRepository.findProfileById(id).orElse(null))
+                .filter(java.util.Objects::nonNull)
+                .peek(profile -> {
+                    profile.setFollowerCount(userGraphRepository.countFollowers(profile.getId()));
+                    profile.setFollowingCount(userGraphRepository.countFollowing(profile.getId()));
+                })
+                .collect(Collectors.toList());
+    }
+
     private void publishUserFollowedEvent(String followerId, String followeeId) {
         UserProfile followerProfile = userProfileRepository.findById(followerId).orElse(null);
 

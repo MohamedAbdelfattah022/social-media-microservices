@@ -51,4 +51,14 @@ public interface UserGraphRepository extends Neo4jRepository<UserNode, String> {
             DETACH DELETE u
             """)
     void deleteUserAndRelationships(String userId);
+
+    @Query("""
+            MATCH (me:User {userId: $userId})
+            MATCH (other:User)
+            WHERE other.userId <> $userId
+              AND NOT (me)-[:FOLLOWS]->(other)
+            RETURN other
+            LIMIT $limit
+            """)
+    List<UserNode> findSuggestions(String userId, int limit);
 }

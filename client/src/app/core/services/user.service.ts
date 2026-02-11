@@ -35,4 +35,10 @@ export class UserService {
   updateUserProfile(request: UpdateUserProfileRequest): Observable<UserProfileData> {
     return this.http.patch<UserProfileData>(`${this.apiUrl}/users/profile`, request);
   }
+
+  getSuggestions(limit: number = 5): Observable<UserProfileData[]> {
+    return this.http.get<UserProfileData[]>(
+      `${this.apiUrl}/users/suggestions`, { params: { limit } }
+    );
+  }
 }
