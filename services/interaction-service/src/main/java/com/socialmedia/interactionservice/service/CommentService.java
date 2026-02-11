@@ -1,5 +1,6 @@
 package com.socialmedia.interactionservice.service;
 
+import com.socialmedia.grpc.user.UserInfo;
 import com.socialmedia.interactionservice.dto.CommentDto;
 import com.socialmedia.interactionservice.dto.CreateCommentDto;
 import com.socialmedia.interactionservice.dto.CursorPageResponse;
@@ -10,6 +11,7 @@ import com.socialmedia.interactionservice.dto.projection.CommentProjection;
 import com.socialmedia.interactionservice.entity.Comment;
 import com.socialmedia.interactionservice.exception.ResourceNotFoundException;
 import com.socialmedia.interactionservice.exception.ResourceOwnershipException;
+import com.socialmedia.interactionservice.grpc.UserServiceClient;
 import com.socialmedia.interactionservice.mapper.CommentMapper;
 import com.socialmedia.interactionservice.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +19,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.UUID;
 
 @Service
@@ -30,6 +31,7 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final CursorPaginationService cursorPaginationService;
     private final NotificationEventPublisher notificationEventPublisher;
+    private final UserServiceClient userServiceClient;
 
     public Long addCommentToPost(CreateCommentDto dto, Long postId, String userId) {
         postServiceClient.validatePostOrThrow(postId);
@@ -76,6 +78,7 @@ public class CommentService {
             projections = projections.subList(0, pageSize);
 
         List<CommentDto> commentDtos = commentMapper.toCommentDtos(projections);
+        enrichWithUserInfo(commentDtos);
 
         String nextCursor = null;
         if (hasNext && !commentDtos.isEmpty()) {
@@ -111,6 +114,7 @@ public class CommentService {
             projections = projections.subList(0, pageSize);
 
         List<CommentDto> commentDtos = commentMapper.toCommentDtos(projections);
+        enrichWithUserInfo(commentDtos);
 
         String nextCursor = null;
         if (hasNext && !commentDtos.isEmpty()) {
@@ -140,6 +144,22 @@ public class CommentService {
         verifyOwnership(comment.getUserId(), userId);
 
         commentRepository.deleteById(commentId);
+    }
+
+    private void enrichWithUserInfo(List<CommentDto> commentDtos) {
+        Set<String> userIds = commentDtos.stream()
+                .map(CommentDto::getUserId)
+                .collect(Collectors.toSet());
+
+        Map<String, UserInfo> userInfoMap = userServiceClient.getUserInfoBatch(userIds);
+
+        for (CommentDto dto : commentDtos) {
+            UserInfo userInfo = userInfoMap.get(dto.getUserId());
+            if (userInfo != null) {
+                dto.setFirstname(userInfo.getFirstName());
+                dto.setLastname(userInfo.getLastName());
+            }
+        }
     }
 
     private void verifyOwnership(String ownerId, String currentUserId) {

@@ -1,7 +1,7 @@
 <div class="comment-item">
   <div class="comment-header">
     <div class="comment-author">
-      <span class="author-name">{{ comment().userId }}</span>
+      <span class="author-name">{{ comment().firstname }} {{ comment().lastname }}</span>
       <span class="comment-date">{{ commentDate }}</span>
       @if (comment().isEdited) {
         <span class="edited-badge">(edited)</span>

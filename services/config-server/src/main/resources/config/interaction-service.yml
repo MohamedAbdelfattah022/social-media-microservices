@@ -33,3 +33,6 @@ spring:
         post-service:
           address: localhost:${POST_GRPC_SERVER_PORT:9090}
           negotiation-type: plaintext
+        user-service:
+          address: localhost:${USER_GRPC_SERVER_PORT:9091}
+          negotiation-type: plaintext

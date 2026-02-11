@@ -10,6 +10,8 @@ public class CommentDto {
     private Long id;
     private Long postId;
     private String userId;
+    private String firstname;
+    private String lastname;
     private String content;
     private Long parentCommentId;
     private Boolean isEdited;

@@ -2,6 +2,8 @@ export type CommentDto = {
   id: number;
   postId: number;
   userId: string;
+  firstname: string;
+  lastname: string;
   content: string;
   parentCommentId: number | null;
   isEdited: boolean;
