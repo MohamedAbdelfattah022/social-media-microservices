@@ -67,15 +67,23 @@
           <div class="flex gap-2 shrink-0">
             <button
               (click)="handleFollow()"
+              [disabled]="isFollowLoading()"
               [ngClass]="{
-                'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-300 border border-gray-300':
+                'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-300 border border-gray-300 disabled:opacity-60 disabled:cursor-not-allowed':
                   isFollowing(),
-                'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-sm':
+                'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed':
                   !isFollowing(),
               }"
               class="rounded-full px-6 py-2.5 font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-95"
             >
-              {{ isFollowing() ? 'Following' : 'Follow' }}
+              @if (isFollowLoading()) {
+                <span
+                  class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent mr-2"
+                ></span>
+                {{ isFollowing() ? 'Unfollowing...' : 'Following...' }}
+              } @else {
+                {{ isFollowing() ? 'Following' : 'Follow' }}
+              }
             </button>
           </div>
         }

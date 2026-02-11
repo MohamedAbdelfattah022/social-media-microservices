@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { UserService } from '../../core/services/user.service';
 import { UserProfileData } from '../../shared/models/users/user-profile-data';
 import { ActivatedRoute } from '@angular/router';
@@ -24,6 +24,7 @@ export class UserProfile {
   protected readonly isLoading = signal<boolean>(true);
   protected readonly error = signal<string | null>(null);
   protected readonly isFollowing = signal(false);
+  protected readonly isFollowLoading = signal(false);
   protected readonly isMyProfile = computed(() => {
     const currentUserId = this.authService.currentUserId();
     return !!this.userId && !!currentUserId && this.userId === currentUserId;
@@ -84,6 +85,24 @@ export class UserProfile {
   }
 
   handleFollow(): void {
-    this.isFollowing.update((isFollowing) => !isFollowing);
+    if (!this.userId || this.isFollowLoading()) return;
+
+    this.isFollowLoading.set(true);
+
+    const followRequest = this.isFollowing()
+      ? this.userService.unfollowUser(this.userId)
+      : this.userService.followUser(this.userId);
+
+    followRequest.subscribe({
+      next: () => {
+        this.isFollowing.update((isFollowing) => !isFollowing);
+        this.isFollowLoading.set(false);
+      },
+      error: (err) => {
+        this.error.set('Failed to update follow status.');
+        console.error(err);
+        this.isFollowLoading.set(false);
+      },
+    });
   }
 }
