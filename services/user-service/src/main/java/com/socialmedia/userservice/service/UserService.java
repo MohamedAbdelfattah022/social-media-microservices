@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -49,11 +51,15 @@ public class UserService {
         UserProfile profile = userProfileRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (StringUtils.hasText(dto.getFirstName())) profile.setFirstName(dto.getFirstName());
-        if (StringUtils.hasText(dto.getLastName())) profile.setLastName(dto.getLastName());
+        if (StringUtils.hasText(dto.getFirstName()))
+            profile.setFirstName(dto.getFirstName());
+        if (StringUtils.hasText(dto.getLastName()))
+            profile.setLastName(dto.getLastName());
 
-        if (dto.getBio() != null) profile.setBio(dto.getBio());
-        if (dto.getProfilePictureUrl() != null) profile.setProfilePictureUrl(dto.getProfilePictureUrl());
+        if (dto.getBio() != null)
+            profile.setBio(dto.getBio());
+        if (dto.getProfilePictureUrl() != null)
+            profile.setProfilePictureUrl(dto.getProfilePictureUrl());
 
         userProfileRepository.save(profile);
     }
@@ -67,5 +73,25 @@ public class UserService {
 
         userProfileRepository.save(profile);
 
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserProfileDto> searchUsers(String query, int limit) {
+        String currentUserId = userContext.getCurrentUserId();
+
+        if (query == null || query.trim().isEmpty())
+            throw new IllegalArgumentException("Search query cannot be empty");
+
+        if (limit <= 0 || limit > 50) limit = 10;
+
+        List<UserProfileDto> users = userProfileRepository
+                .searchUsersByUsername(query.trim(), currentUserId, limit);
+
+        users.forEach(user -> {
+            user.setFollowerCount(userGraphRepository.countFollowers(user.getId()));
+            user.setFollowingCount(userGraphRepository.countFollowing(user.getId()));
+        });
+
+        return users;
     }
 }

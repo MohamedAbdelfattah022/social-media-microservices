@@ -30,6 +30,14 @@ public class UserController {
         return ResponseEntity.ok(socialGraphService.getSuggestions(limit));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<UserProfileDto>> searchUsers(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "10") int limit) {
+        List<UserProfileDto> results = userService.searchUsers(query, limit);
+        return ResponseEntity.ok(results);
+    }
+
     @GetMapping("/{userId}")
     public ResponseEntity<UserProfileDto> getUserProfile(@PathVariable String userId) {
         return ResponseEntity.ok(userService.getUserProfile(userId));
@@ -40,7 +48,6 @@ public class UserController {
         userService.updateUserProfile(dto);
         return ResponseEntity.noContent().build();
     }
-
 
     @PostMapping("/follow/{followeeId}")
     public ResponseEntity<Void> followUser(@PathVariable String followeeId) {

@@ -1,0 +1,66 @@
+<div class="relative w-full max-w-md">
+  <div class="relative">
+    <z-icon
+      zType="search"
+      class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+      zSize="lg"
+    />
+    <input
+      type="text"
+      [value]="searchQuery()"
+      (input)="onSearchInput($event)"
+      placeholder="Search users..."
+      class="w-full ml-2 pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    />
+
+    @if (searchQuery()) {
+      <button
+        (click)="clearSearch()"
+        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+      >
+        <z-icon zType="x" zSize="lg" />
+      </button>
+    }
+  </div>
+
+  @if (showResults()) {
+    <div
+      class="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto"
+    >
+      @if (isSearching()) {
+        <div class="flex items-center justify-center py-8">
+          <z-icon zType="loader-circle" class="text-blue-500 animate-spin" zSize="xl" />
+          <span class="ml-2 text-gray-600">Searching...</span>
+        </div>
+      } @else if (searchResults().length > 0) {
+        @for (user of searchResults(); track user.id) {
+          <button
+            (click)="navigateToProfile(user.id)"
+            class="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+          >
+            <img
+              [src]="user.profilePictureUrl || 'https://via.placeholder.com/40'"
+              [alt]="user.username"
+              class="w-10 h-10 rounded-full object-cover"
+            />
+
+            <div class="flex-1 text-left">
+              <div class="font-semibold text-gray-900">
+                {{ user.firstName }} {{ user.lastName }}
+              </div>
+              <div class="text-sm text-gray-500">@{{ user.username }}</div>
+            </div>
+
+            <div class="text-sm text-gray-500">{{ user.followerCount }} followers</div>
+          </button>
+        }
+      } @else {
+        <div class="flex flex-col items-center justify-center py-8 px-4 text-center">
+          <z-icon zType="users" class="text-gray-300 mb-2" zSize="xl" />
+          <p class="text-gray-600 font-medium">No users found</p>
+          <p class="text-sm text-gray-500 mt-1">Try a different search term</p>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -41,4 +41,10 @@ export class UserService {
       `${this.apiUrl}/users/suggestions`, { params: { limit } }
     );
   }
+
+  searchUsers(query: string, limit: number = 10): Observable<UserProfileData[]> {
+    return this.http.get<UserProfileData[]>(`${this.apiUrl}/users/search`, {
+      params: { query, limit: limit.toString() }
+    });
+  }
 }

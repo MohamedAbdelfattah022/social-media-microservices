@@ -1,4 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { UserProfileData } from '../../shared/models/users/user-profile-data';
 import { LucideAngularModule, Users } from 'lucide-angular';
 import { UserService } from '../../core/services/user.service';
@@ -17,6 +18,7 @@ export class Recommendations implements OnInit {
   hoveredUser: string | null = null;
 
   private userService = inject(UserService);
+  private router = inject(Router);
 
   ngOnInit(): void {
     this.loadSuggestions();
@@ -46,6 +48,10 @@ export class Recommendations implements OnInit {
     } else {
       this.onFollow(userId);
     }
+  }
+
+  navigateToProfile(userId: string): void {
+    this.router.navigate(['/profile', userId]);
   }
 
   isFollowed(userId: string): boolean {
