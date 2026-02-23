@@ -4,6 +4,7 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
 import { UserProfileData } from '../../shared/models/users/user-profile-data';
+import { FileUploadResponse } from '@/shared/models/files/file-upload-response';
 
 @Injectable({
   providedIn: 'root',
@@ -32,8 +33,21 @@ export class UserService {
     return this.http.delete<void>(`${this.apiUrl}/users/follow/${followeeId}`);
   }
 
-  updateUserProfile(request: UpdateUserProfileRequest): Observable<UserProfileData> {
-    return this.http.patch<UserProfileData>(`${this.apiUrl}/users/profile`, request);
+  updateUserProfile(request: UpdateUserProfileRequest): Observable<void> {
+    return this.http.patch<void>(`${this.apiUrl}/users/me`, request);
+  }
+
+  uploadProfilePicture(file: File): Observable<{ profilePictureUrl: string; }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ profilePictureUrl: string; }>(
+      `${this.apiUrl}/users/me/profile-picture`,
+      formData,
+    );
+  }
+
+  deleteProfilePicture(): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/users/me/profile-picture`);
   }
 
   getSuggestions(limit: number = 5): Observable<UserProfileData[]> {

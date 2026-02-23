@@ -6,10 +6,13 @@ import { ZardIconComponent } from '../../shared/components/icon/icon.component';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { Feed } from '../feed/feed';
+import { ZardDialogService } from '@/shared/components/dialog';
+import { EditProfileDialog } from '@/features/edit-profile';
+import { ZardButtonComponent } from '@/shared/components/button/button.component';
 
 @Component({
   selector: 'app-user-profile',
-  imports: [CommonModule, ZardIconComponent, Feed],
+  imports: [CommonModule, ZardIconComponent, Feed, ZardButtonComponent],
   templateUrl: './user-profile.html',
   styleUrl: './user-profile.css',
 })
@@ -17,6 +20,7 @@ export class UserProfile {
   private readonly userService = inject(UserService);
   private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
+  private readonly dialogService = inject(ZardDialogService);
 
   protected readonly userId: string | null;
 
@@ -103,6 +107,32 @@ export class UserProfile {
         console.error(err);
         this.isFollowLoading.set(false);
       },
+    });
+  }
+
+  openEditProfileDialog(): void {
+    const ref = this.dialogService.create<EditProfileDialog, UserProfileData>({
+      zTitle: 'Edit Profile',
+      zContent: EditProfileDialog,
+      zData: this.profile()!,
+      zHideFooter: true,
+      zWidth: '480px',
+    });
+
+    ref.afterClosed().subscribe((result) => {
+      if (result) {
+        this.profile.update((prev) =>
+          prev
+            ? {
+              ...prev,
+              firstName: result.firstName ?? prev.firstName,
+              lastName: result.lastName ?? prev.lastName,
+              bio: result.bio ?? prev.bio,
+              profilePictureUrl: result.profilePictureUrl ?? prev.profilePictureUrl,
+            }
+            : prev,
+        );
+      }
     });
   }
 }
