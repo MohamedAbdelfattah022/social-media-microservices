@@ -1,45 +1,125 @@
-<div class="comment-section">
-  <div class="comment-section-header">
-    <h3 class="section-title">Comments</h3>
+<div class="flex flex-col mt-4 border-t border-gray-100 dark:border-gray-800">
+  <!-- Header -->
+  <div class="px-4 pt-4 pb-2">
+    <h3 class="text-base font-semibold text-gray-900 dark:text-white">Comments</h3>
   </div>
 
-  <div class="add-comment-wrapper">
-    <app-add-comment
-      [postId]="postId()"
-      (commentSubmitted)="handleCommentSubmitted($event)"
-    />
-  </div>
+  <!-- Add comment -->
+  <app-add-comment [postId]="postId()" (commentSubmitted)="handleCommentSubmitted($event)" />
 
+  <!-- Loading (initial) -->
   @if (isLoading() && comments().length === 0) {
-    <div class="loading-state">
-      <span>Loading comments...</span>
+    <div
+      class="flex items-center justify-center gap-2 py-8 text-sm text-gray-400 dark:text-gray-500"
+    >
+      <span
+        class="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin"
+      ></span>
+      Loading comments…
     </div>
   }
 
+  <!-- Empty -->
   @if (!isLoading() && comments().length === 0) {
-    <div class="empty-state">
-      <p>No comments yet. Be the first to comment!</p>
+    <div
+      class="flex flex-col items-center justify-center gap-1 py-10 text-gray-400 dark:text-gray-500"
+    >
+      <p class="text-sm">No comments yet. Be the first!</p>
     </div>
   }
 
+  <!-- Comments list -->
   @if (comments().length > 0) {
-    <div class="comments-list">
+    <div>
       @for (comment of comments(); track comment.id) {
+        <!-- Comment row -->
         <app-comment-item
           [comment]="comment"
           (commentDeleted)="handleCommentDeleted($event)"
           (replyClicked)="handleReplyClicked($event)"
           (viewRepliesClicked)="handleViewRepliesClicked($event)"
         />
+
+        <!-- Inline reply form -->
+        @if (activeReplyCommentId() === comment.id) {
+          <div class="pl-12 pr-4 pb-2">
+            <div class="border-l-2 border-blue-400 dark:border-blue-500 pl-3 rounded-sm">
+              <app-add-comment
+                [postId]="postId()"
+                [parentCommentId]="comment.id"
+                placeholder="Write a reply…"
+                (commentSubmitted)="handleReplySubmitted(comment.id, $event)"
+              />
+              <div class="px-4 pb-2">
+                <button
+                  type="button"
+                  class="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  (click)="handleCancelReply()"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Replies thread -->
+        @if (loadingReplies().has(comment.id) && !expandedReplies().has(comment.id)) {
+          <div
+            class="pl-12 pr-4 pb-3 flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500"
+          >
+            <span
+              class="w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin"
+            ></span>
+            Loading replies…
+          </div>
+        }
+
+        @if (expandedReplies().has(comment.id)) {
+          @let replyPage = repliesMap().get(comment.id);
+          @if (replyPage) {
+            <div class="ml-12 mr-2 mb-1 border-l-2 border-gray-200 dark:border-gray-700">
+              @for (reply of replyPage.comments; track reply.id) {
+                <app-comment-item
+                  [comment]="reply"
+                  (commentDeleted)="handleCommentDeleted($event)"
+                  (replyClicked)="handleReplyClicked($event)"
+                  (viewRepliesClicked)="handleViewRepliesClicked($event)"
+                />
+              }
+
+              @if (replyPage.hasMore) {
+                <div class="px-4 py-2">
+                  <button
+                    type="button"
+                    class="flex items-center gap-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 disabled:opacity-50 transition-colors"
+                    [disabled]="loadingReplies().has(comment.id)"
+                    (click)="loadMoreReplies(comment.id)"
+                  >
+                    @if (loadingReplies().has(comment.id)) {
+                      <span
+                        class="w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin"
+                      ></span>
+                      Loading…
+                    } @else {
+                      Load more replies
+                    }
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        }
       }
     </div>
   }
 
+  <!-- Load more comments -->
   @if (hasMore() && !isLoading()) {
-    <div class="load-more-wrapper">
+    <div class="flex justify-center py-3">
       <button
         type="button"
-        class="load-more-button"
+        class="px-5 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-full transition-colors"
         (click)="loadMore()"
       >
         Load more comments
@@ -47,9 +127,15 @@
     </div>
   }
 
+  <!-- Loading more -->
   @if (isLoading() && comments().length > 0) {
-    <div class="loading-more">
-      <span>Loading more comments...</span>
+    <div
+      class="flex items-center justify-center gap-2 py-4 text-sm text-gray-400 dark:text-gray-500"
+    >
+      <span
+        class="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin"
+      ></span>
+      Loading more…
     </div>
   }
 </div>

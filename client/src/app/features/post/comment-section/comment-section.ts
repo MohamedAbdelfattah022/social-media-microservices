@@ -14,6 +14,8 @@ import { toast } from 'ngx-sonner';
 import { AddComment } from '../add-comment/add-comment';
 import { CommentItem } from '../comment-item/comment-item';
 
+type ReplyPage = { comments: CommentDto[]; hasMore: boolean; nextCursor: string | null; };
+
 @Component({
   selector: 'app-comment-section',
   imports: [AddComment, CommentItem],
@@ -34,6 +36,11 @@ export class CommentSection {
   protected readonly nextCursor = signal<string | null>(null);
   protected readonly pageSize = 10;
 
+  protected readonly activeReplyCommentId = signal<number | null>(null);
+  protected readonly expandedReplies = signal<Set<number>>(new Set());
+  protected readonly repliesMap = signal<Map<number, ReplyPage>>(new Map());
+  protected readonly loadingReplies = signal<Set<number>>(new Set());
+
   private readonly addCommentComponent = viewChild(AddComment);
 
   ngOnInit() {
@@ -48,10 +55,8 @@ export class CommentSection {
       .subscribe({
         next: (response) => {
           if (cursor) {
-            // Append for pagination
             this.comments.set([...this.comments(), ...response.data]);
           } else {
-            // Initial load or refresh
             this.comments.set(response.data);
           }
           this.hasMore.set(response.hasNext);
@@ -81,9 +86,7 @@ export class CommentSection {
       .subscribe({
         next: () => {
           this.addCommentComponent()?.clearContent();
-          // Reload comments to show the new one
           this.loadComments();
-          // Update parent's comment count
           this.commentCountUpdated.emit(this.comments().length + 1);
           toast.success('Comment added!');
         },
@@ -108,11 +111,9 @@ export class CommentSection {
       zOnOk: () => {
         this.interactionService.deleteComment(commentId).subscribe({
           next: () => {
-            // Remove from local state
             this.comments.set(
               this.comments().filter((c) => c.id !== commentId)
             );
-            // Update parent's comment count
             this.commentCountUpdated.emit(this.comments().length);
             toast.success('Comment deleted!');
           },
@@ -128,14 +129,81 @@ export class CommentSection {
   }
 
   handleReplyClicked(commentId: number) {
-    // TODO: Implement reply functionality
-    console.log('Reply to comment:', commentId);
-    toast.info('Reply feature coming soon!');
+    this.activeReplyCommentId.update((current) => (current === commentId ? null : commentId));
+  }
+
+  handleCancelReply() {
+    this.activeReplyCommentId.set(null);
+  }
+
+  handleReplySubmitted(parentCommentId: number, content: string) {
+    this.interactionService.replyToComment(parentCommentId, { content }).subscribe({
+      next: () => {
+        this.activeReplyCommentId.set(null);
+        this.comments.update((list) =>
+          list.map((c) =>
+            c.id === parentCommentId ? { ...c, replyCount: c.replyCount + 1 } : c
+          )
+        );
+        if (this.expandedReplies().has(parentCommentId)) {
+          this.loadReplies(parentCommentId);
+        } else {
+          this.handleViewRepliesClicked(parentCommentId);
+        }
+        toast.success('Reply posted!');
+      },
+      error: () => {
+        toast.error('Failed to post reply', { description: 'Please try again.' });
+      },
+    });
   }
 
   handleViewRepliesClicked(commentId: number) {
-    // TODO: Implement view replies functionality
-    console.log('View replies for comment:', commentId);
-    toast.info('View replies feature coming soon!');
+    const expanded = new Set(this.expandedReplies());
+    if (expanded.has(commentId)) {
+      expanded.delete(commentId);
+      this.expandedReplies.set(expanded);
+      const map = new Map(this.repliesMap());
+      map.delete(commentId);
+      this.repliesMap.set(map);
+      return;
+    }
+    this.loadReplies(commentId);
+  }
+
+  loadMoreReplies(commentId: number) {
+    const page = this.repliesMap().get(commentId);
+    if (!page?.hasMore || !page.nextCursor || this.loadingReplies().has(commentId)) return;
+    this.loadReplies(commentId, page.nextCursor);
+  }
+
+  private loadReplies(commentId: number, cursor?: string) {
+    const loading = new Set(this.loadingReplies());
+    loading.add(commentId);
+    this.loadingReplies.set(loading);
+
+    this.interactionService.getCommentReplies(commentId, this.pageSize, cursor).subscribe({
+      next: (response) => {
+        const existing = this.repliesMap().get(commentId);
+        const merged = cursor && existing ? [...existing.comments, ...response.data] : response.data;
+        const map = new Map(this.repliesMap());
+        map.set(commentId, { comments: merged, hasMore: response.hasNext, nextCursor: response.nextCursor });
+        this.repliesMap.set(map);
+
+        const expanded = new Set(this.expandedReplies());
+        expanded.add(commentId);
+        this.expandedReplies.set(expanded);
+
+        const loading = new Set(this.loadingReplies());
+        loading.delete(commentId);
+        this.loadingReplies.set(loading);
+      },
+      error: () => {
+        const loading = new Set(this.loadingReplies());
+        loading.delete(commentId);
+        this.loadingReplies.set(loading);
+        toast.error('Failed to load replies', { description: 'Please try again.' });
+      },
+    });
   }
 }
