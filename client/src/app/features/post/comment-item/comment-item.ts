@@ -6,6 +6,7 @@ import { AuthService } from '@/core/services/auth.service';
 import { computePostDate } from '@/shared/utils/compute-date-util';
 import { InteractionService } from '@/core/services/interaction.service';
 import { toast } from 'ngx-sonner';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-comment-item',
@@ -17,9 +18,10 @@ import { toast } from 'ngx-sonner';
 export class CommentItem {
   private readonly authService = inject(AuthService);
   private readonly interactionService = inject(InteractionService);
+  private readonly router = inject(Router);
 
   comment = input.required<CommentDto>();
-  
+
   commentUpdated = output<CommentDto>();
   commentDeleted = output<number>();
   replyClicked = output<number>();
@@ -43,7 +45,6 @@ export class CommentItem {
     const wasLiked = this.isLiked();
     const originalCount = this.comment().likeCount;
 
-    // Optimistic update
     this.isLiked.set(!wasLiked);
     this.comment().likeCount += wasLiked ? -1 : 1;
     this.isLiking.set(true);
@@ -58,7 +59,6 @@ export class CommentItem {
       },
       error: (error) => {
         console.error('Error toggling comment like:', error);
-        // Rollback on error
         this.isLiked.set(wasLiked);
         this.comment().likeCount = originalCount;
         this.isLiking.set(false);
@@ -70,7 +70,6 @@ export class CommentItem {
   }
 
   handleEdit() {
-    // Will be implemented when we add edit dialog
     console.log('Edit comment:', this.comment().id);
   }
 
@@ -84,5 +83,9 @@ export class CommentItem {
 
   handleViewReplies() {
     this.viewRepliesClicked.emit(this.comment().id);
+  }
+
+  navigateToProfile() {
+    this.router.navigate(['/profile', this.comment().userId]);
   }
 }

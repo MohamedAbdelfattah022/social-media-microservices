@@ -3,7 +3,11 @@
 >
   <!-- Header Section -->
   <div class="p-5 pb-3 flex items-start justify-between">
-    <div class="flex items-center gap-3">
+    <button
+      type="button"
+      class="flex items-center gap-3 rounded-lg p-1 -ml-1 transition-colors hover:bg-gray-50 active:bg-gray-100"
+      (click)="navigateToProfile()"
+    >
       <div class="relative">
         <div
           class="h-12 w-12 rounded-full overflow-hidden flex items-center justify-center bg-linear-to-br from-gray-100 to-gray-200 ring-2 ring-white shadow-sm"
@@ -19,13 +23,13 @@
       </div>
       <div>
         <div class="flex items-center gap-2">
-          <h3 class="font-semibold text-gray-900 text-[15px] leading-tight">
+          <h3 class="font-semibold text-gray-900 text-[15px] leading-tight hover:underline">
             {{ data().firstName + ' ' + data().lastName }}
           </h3>
         </div>
         <p class="text-[13px] text-gray-500 mt-0.5">{{ postDate }}</p>
       </div>
-    </div>
+    </button>
 
     <!-- Menu Button (Only visible for own posts) -->
     @if (isOwnPost()) {
@@ -129,7 +133,9 @@
       (click)="toggleComments()"
       [class]="
         'flex flex-1 items-center justify-center gap-2.5 rounded-lg px-4 py-2.5 transition-all duration-200 active:scale-95 font-medium text-sm ' +
-        (showComments() ? 'bg-blue-50 text-blue-600 hover:bg-blue-100' : 'text-gray-600 hover:bg-gray-50')
+        (showComments()
+          ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+          : 'text-gray-600 hover:bg-gray-50')
       "
     >
       <z-icon zType="message-circle" class="h-5 w-5" />

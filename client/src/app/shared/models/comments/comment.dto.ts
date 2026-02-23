@@ -4,6 +4,8 @@ export type CommentDto = {
   userId: string;
   firstname: string;
   lastname: string;
+  username: string;
+  profilePictureUrl?: string;
   content: string;
   parentCommentId: number | null;
   isEdited: boolean;

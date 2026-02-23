@@ -158,6 +158,8 @@ public class CommentService {
             if (userInfo != null) {
                 dto.setFirstname(userInfo.getFirstName());
                 dto.setLastname(userInfo.getLastName());
+                dto.setUsername(userInfo.getUsername());
+                dto.setProfilePictureUrl(userInfo.getProfilePictureUrl());
             }
         }
     }

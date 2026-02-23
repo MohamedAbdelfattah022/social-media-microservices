@@ -11,6 +11,7 @@ import { AuthService } from '@/core/services/auth.service';
 import { InteractionService } from '@/core/services/interaction.service';
 import { CommentSection } from './comment-section/comment-section';
 import { toast } from 'ngx-sonner';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-post-card',
@@ -23,6 +24,7 @@ export class PostCard {
   private readonly postService = inject(PostService);
   private readonly authService = inject(AuthService);
   private readonly interactionService = inject(InteractionService);
+  private readonly router = inject(Router);
 
   data = input.required<PostData>();
   postDeleted = output<number>();
@@ -60,7 +62,6 @@ export class PostCard {
     const wasLiked = this.isLiked();
     const originalCount = this.data().likeCount;
 
-    // Optimistic update
     this.isLiked.set(!wasLiked);
     this.data().likeCount += wasLiked ? -1 : 1;
     this.isLiking.set(true);
@@ -75,7 +76,6 @@ export class PostCard {
       },
       error: (error) => {
         console.error('Error toggling like:', error);
-        // Rollback on error
         this.isLiked.set(wasLiked);
         this.data().likeCount = originalCount;
         this.isLiking.set(false);
@@ -163,5 +163,9 @@ export class PostCard {
 
   handleCommentCountUpdated(newCount: number) {
     this.data().commentCount = newCount;
+  }
+
+  navigateToProfile() {
+    this.router.navigate(['/profile', this.data().userId]);
   }
 }

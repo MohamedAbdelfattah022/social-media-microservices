@@ -1,20 +1,58 @@
-<div class="comment-item">
-  <div class="comment-header">
-    <div class="comment-author">
-      <span class="author-name">{{ comment().firstname }} {{ comment().lastname }}</span>
-      <span class="comment-date">{{ commentDate }}</span>
-      @if (comment().isEdited) {
-        <span class="edited-badge">(edited)</span>
-      }
+<div class="flex flex-col gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-700">
+  <!-- Header -->
+  <div class="flex items-start justify-between">
+    <div class="flex items-start gap-2.5">
+      <!-- Avatar button -->
+      <button
+        type="button"
+        class="shrink-0 rounded-full transition-opacity hover:opacity-85"
+        (click)="navigateToProfile()"
+        [attr.aria-label]="'View profile of ' + comment().firstname"
+      >
+        @if (comment().profilePictureUrl) {
+          <img
+            [src]="comment().profilePictureUrl"
+            [alt]="comment().firstname"
+            class="w-11 h-11 rounded-full object-cover outline-2 outline-white dark:outline-gray-800"
+          />
+        } @else {
+          <div
+            class="w-11 h-11 rounded-full bg-linear-to-br from-gray-300 to-gray-400 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center text-[10px] font-semibold text-gray-700 dark:text-gray-300"
+          >
+            {{ (comment().firstname + ' ' + comment().lastname).slice(0, 2).toUpperCase() }}
+          </div>
+        }
+      </button>
+
+      <!-- Author info -->
+      <div class="flex flex-col gap-0.5">
+        <button
+          type="button"
+          class="text-sm font-semibold text-gray-900 dark:text-white text-left transition-colors hover:text-blue-600 dark:hover:text-blue-400 hover:underline"
+          (click)="navigateToProfile()"
+        >
+          {{ comment().firstname }} {{ comment().lastname }}
+        </button>
+        <div class="flex items-center flex-wrap gap-1.5">
+          @if (comment().username) {
+            <span class="text-xs text-gray-500 dark:text-gray-400">@{{ comment().username }}</span>
+          }
+          <span class="text-xs text-gray-500 dark:text-gray-400">{{ commentDate }}</span>
+          @if (comment().isEdited) {
+            <span class="text-xs text-gray-400 dark:text-gray-500 italic">(edited)</span>
+          }
+        </div>
+      </div>
     </div>
 
+    <!-- Options menu -->
     @if (isOwnComment()) {
-      <div class="comment-menu">
+      <div class="-mt-1">
         <button
           type="button"
           z-menu
           [zMenuTriggerFor]="commentMenu"
-          class="menu-trigger"
+          class="p-1 rounded-full text-gray-500 dark:text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
         >
           <z-icon zType="ellipsis" class="h-5 w-5" />
         </button>
@@ -35,19 +73,25 @@
     }
   </div>
 
-  <div class="comment-content">
+  <!-- Content -->
+  <p class="text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap wrap-break-word">
     {{ comment().content }}
-  </div>
+  </p>
 
-  <div class="comment-actions">
+  <!-- Actions -->
+  <div class="flex items-center gap-4 mt-1">
     <button
       type="button"
-      class="action-button"
-      [class.liked]="isLiked()"
+      class="flex items-center gap-1 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      [class]="
+        isLiked()
+          ? 'text-red-500 dark:text-red-400'
+          : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
+      "
       [disabled]="isLiking()"
       (click)="handleLike()"
     >
-      <z-icon [zType]="isLiked() ? 'heart' : 'heart'" [class]="isLiked() ? 'fill-current' : ''" />
+      <z-icon zType="heart" [class]="isLiked() ? 'fill-current' : ''" />
       @if (comment().likeCount > 0) {
         <span>{{ comment().likeCount }}</span>
       }
@@ -55,7 +99,7 @@
 
     <button
       type="button"
-      class="action-button"
+      class="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 transition-colors hover:text-blue-600 dark:hover:text-blue-400"
       (click)="handleReply()"
     >
       <z-icon zType="message-circle" />
@@ -65,10 +109,10 @@
     @if (comment().replyCount > 0) {
       <button
         type="button"
-        class="action-button view-replies"
+        class="text-sm font-medium text-blue-600 dark:text-blue-400 transition-colors hover:underline"
         (click)="handleViewReplies()"
       >
-        <span>View {{ comment().replyCount }} {{ comment().replyCount === 1 ? 'reply' : 'replies' }}</span>
+        View {{ comment().replyCount }} {{ comment().replyCount === 1 ? 'reply' : 'replies' }}
       </button>
     }
   </div>

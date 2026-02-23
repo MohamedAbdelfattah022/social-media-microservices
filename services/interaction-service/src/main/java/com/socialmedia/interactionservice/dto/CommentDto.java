@@ -12,6 +12,8 @@ public class CommentDto {
     private String userId;
     private String firstname;
     private String lastname;
+    private String username;
+    private String profilePictureUrl;
     private String content;
     private Long parentCommentId;
     private Boolean isEdited;
