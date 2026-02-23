@@ -1,26 +1,31 @@
 package com.socialmedia.userservice.service;
 
-import com.socialmedia.userservice.dto.SignupRequest;
-import com.socialmedia.userservice.dto.UpdateUserDto;
-import com.socialmedia.userservice.dto.UserProfileDto;
+import com.socialmedia.userservice.client.MinioFeignClient;
+import com.socialmedia.userservice.dto.*;
 import com.socialmedia.userservice.entity.postgres.UserProfile;
 import com.socialmedia.userservice.exception.UserNotFoundException;
 import com.socialmedia.userservice.repository.neo4j.UserGraphRepository;
 import com.socialmedia.userservice.repository.postgres.UserProfileRepository;
 import com.socialmedia.userservice.security.KeycloakUserContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
     private final UserProfileRepository userProfileRepository;
     private final UserGraphRepository userGraphRepository;
     private final KeycloakUserContext userContext;
+    private final MinioFeignClient minioFeignClient;
 
     public UserProfileDto getUserProfile() {
         String userId = userContext.getCurrentUserId();
@@ -72,7 +77,6 @@ public class UserService {
                 .build();
 
         userProfileRepository.save(profile);
-
     }
 
     @Transactional(readOnly = true)
@@ -93,5 +97,71 @@ public class UserService {
         });
 
         return users;
+    }
+
+    @Transactional
+    public UploadProfilePictureResponse uploadProfilePicture(MultipartFile file) {
+        String userId = userContext.getCurrentUserId();
+
+        UserProfile profile = userProfileRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        String oldPictureUrl = profile.getProfilePictureUrl();
+        if (StringUtils.hasText(oldPictureUrl)) {
+            try {
+                String oldFileId = extractFileIdFromUrl(oldPictureUrl);
+                if (oldFileId != null) {
+                    minioFeignClient.deleteFile(oldFileId);
+                    log.info("Deleted old profile picture fileId={} for userId={}", oldFileId, userId);
+                }
+            } catch (Exception e) {
+                log.warn("Could not delete old profile picture for userId={}: {}", userId, e.getMessage());
+            }
+        }
+
+        FileUploadResponse uploadResponse = minioFeignClient.uploadFile(file);
+        String fileId = uploadResponse.getId();
+
+        String presignedUrl = minioFeignClient.getPresignedUrl(fileId);
+
+        profile.setProfilePictureUrl(presignedUrl);
+        userProfileRepository.save(profile);
+
+        log.info("Profile picture updated for userId={}, fileId={}", userId, fileId);
+        return new UploadProfilePictureResponse(presignedUrl);
+    }
+
+    @Transactional
+    public void deleteProfilePicture() {
+        String userId = userContext.getCurrentUserId();
+
+        UserProfile profile = userProfileRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        String pictureUrl = profile.getProfilePictureUrl();
+        if (!StringUtils.hasText(pictureUrl)) {
+            return;
+        }
+
+        try {
+            String fileId = extractFileIdFromUrl(pictureUrl);
+            if (fileId != null) {
+                minioFeignClient.deleteFile(fileId);
+                log.info("Deleted profile picture fileId={} for userId={}", fileId, userId);
+            }
+        } catch (Exception e) {
+            log.warn("Could not delete profile picture from storage for userId={}: {}", userId, e.getMessage());
+        }
+
+        profile.setProfilePictureUrl(null);
+        userProfileRepository.save(profile);
+    }
+
+    private String extractFileIdFromUrl(String url) {
+        if (url == null) return null;
+        Matcher matcher = Pattern
+                .compile("([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})")
+                .matcher(url);
+        return matcher.find() ? matcher.group(1) : null;
     }
 }

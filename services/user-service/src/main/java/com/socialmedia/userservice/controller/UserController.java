@@ -1,14 +1,17 @@
 package com.socialmedia.userservice.controller;
 
 import com.socialmedia.userservice.dto.UpdateUserDto;
+import com.socialmedia.userservice.dto.UploadProfilePictureResponse;
 import com.socialmedia.userservice.dto.UserProfileDto;
 import com.socialmedia.userservice.service.SocialGraphService;
 import com.socialmedia.userservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -46,6 +49,22 @@ public class UserController {
     @PatchMapping("/me")
     public ResponseEntity<Void> updateUserProfile(@RequestBody @Valid UpdateUserDto dto) {
         userService.updateUserProfile(dto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/me/profile-picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UploadProfilePictureResponse> uploadProfilePicture(
+            @RequestParam("file") MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        UploadProfilePictureResponse response = userService.uploadProfilePicture(file);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @DeleteMapping("/me/profile-picture")
+    public ResponseEntity<Void> deleteProfilePicture() {
+        userService.deleteProfilePicture();
         return ResponseEntity.noContent().build();
     }
 

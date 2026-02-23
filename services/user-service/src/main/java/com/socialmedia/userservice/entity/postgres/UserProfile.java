@@ -25,6 +25,7 @@ public class UserProfile {
     @Column(columnDefinition = "TEXT")
     private String bio;
 
+    @Column(columnDefinition = "TEXT")
     private String profilePictureUrl;
 
     @CreatedDate

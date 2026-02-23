@@ -137,4 +137,17 @@ public class MinioController {
                     .body("Error deleting file: " + e.getMessage());
         }
     }
+
+    @GetMapping("/{fileId}/presigned-url")
+    public ResponseEntity<String> getPresignedUrl(@PathVariable UUID fileId) {
+        try {
+            String url = minioService.getPresignedUrl(fileId);
+            return ResponseEntity.ok(url);
+        } catch (RuntimeException e) {
+            if (e.getMessage() != null && e.getMessage().contains("not found")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }
