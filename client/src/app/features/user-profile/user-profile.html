@@ -47,13 +47,19 @@
             </div>
 
             <div class="mt-5 flex gap-8">
-              <div class="cursor-pointer transition-all hover:scale-105">
+              <div
+                (click)="openFollowListDialog('following')"
+                class="cursor-pointer transition-all hover:scale-105"
+              >
                 <span class="font-semibold text-gray-900 text-lg">
                   {{ formattedFollowing() }}
                 </span>
                 <span class="ml-1.5 text-gray-500 text-sm">Following</span>
               </div>
-              <div class="cursor-pointer transition-all hover:scale-105">
+              <div
+                (click)="openFollowListDialog('followers')"
+                class="cursor-pointer transition-all hover:scale-105"
+              >
                 <span class="font-semibold text-gray-900 text-lg">
                   {{ formattedFollowers() }}
                 </span>
@@ -104,8 +110,8 @@
 
     <!-- Posts Section -->
     <div class="pb-12">
-      @if (userId) {
-        <app-feed [userId]="userId"></app-feed>
+      @if (userId()) {
+        <app-feed [userId]="userId()!"></app-feed>
       }
     </div>
   }

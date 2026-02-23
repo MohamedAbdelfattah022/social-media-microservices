@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, signal } from '@angular/core';
 import { UserService } from '../../core/services/user.service';
 import { UserProfileData } from '../../shared/models/users/user-profile-data';
 import { ActivatedRoute } from '@angular/router';
@@ -9,6 +9,11 @@ import { Feed } from '../feed/feed';
 import { ZardDialogService } from '@/shared/components/dialog';
 import { EditProfileDialog } from '@/features/edit-profile';
 import { ZardButtonComponent } from '@/shared/components/button/button.component';
+import {
+  FollowListDialog,
+  FollowListDialogData,
+} from './follow-list-dialog/follow-list-dialog';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-user-profile',
@@ -16,13 +21,13 @@ import { ZardButtonComponent } from '@/shared/components/button/button.component
   templateUrl: './user-profile.html',
   styleUrl: './user-profile.css',
 })
-export class UserProfile {
+export class UserProfile implements OnDestroy {
   private readonly userService = inject(UserService);
   private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly dialogService = inject(ZardDialogService);
 
-  protected readonly userId: string | null;
+  protected readonly userId = signal<string | null>(null);
 
   protected readonly profile = signal<UserProfileData | null>(null);
   protected readonly isLoading = signal<boolean>(true);
@@ -31,18 +36,29 @@ export class UserProfile {
   protected readonly isFollowLoading = signal(false);
   protected readonly isMyProfile = computed(() => {
     const currentUserId = this.authService.currentUserId();
-    return !!this.userId && !!currentUserId && this.userId === currentUserId;
+    const uid = this.userId();
+    return !!uid && !!currentUserId && uid === currentUserId;
   });
 
-  constructor() {
-    this.userId = this.route.snapshot.paramMap.get('userId');
+  private readonly routeSub: Subscription;
 
-    if (this.userId) {
-      this.loadUserProfile(this.userId);
-    } else {
-      this.isLoading.set(false);
-      this.error.set('User ID not found in route.');
-    }
+  constructor() {
+    this.routeSub = this.route.paramMap.subscribe((params) => {
+      const uid = params.get('userId');
+      this.userId.set(uid);
+      this.isFollowing.set(false);
+
+      if (uid) {
+        this.loadUserProfile(uid);
+      } else {
+        this.isLoading.set(false);
+        this.error.set('User ID not found in route.');
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.routeSub.unsubscribe();
   }
 
   loadUserProfile(userId: string) {
@@ -89,13 +105,14 @@ export class UserProfile {
   }
 
   handleFollow(): void {
-    if (!this.userId || this.isFollowLoading()) return;
+    const uid = this.userId();
+    if (!uid || this.isFollowLoading()) return;
 
     this.isFollowLoading.set(true);
 
     const followRequest = this.isFollowing()
-      ? this.userService.unfollowUser(this.userId)
-      : this.userService.followUser(this.userId);
+      ? this.userService.unfollowUser(uid)
+      : this.userService.followUser(uid);
 
     followRequest.subscribe({
       next: () => {
@@ -107,6 +124,20 @@ export class UserProfile {
         console.error(err);
         this.isFollowLoading.set(false);
       },
+    });
+  }
+
+  openFollowListDialog(type: 'followers' | 'following'): void {
+    const uid = this.userId();
+    if (!uid) return;
+
+    const title = type === 'followers' ? 'Followers' : 'Following';
+    this.dialogService.create<FollowListDialog, FollowListDialogData>({
+      zTitle: title,
+      zContent: FollowListDialog,
+      zData: { userId: uid, type },
+      zHideFooter: true,
+      zWidth: '420px',
     });
   }
 
