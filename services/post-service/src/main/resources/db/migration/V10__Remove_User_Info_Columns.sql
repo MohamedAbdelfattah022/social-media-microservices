@@ -1,0 +1,4 @@
+ALTER TABLE posts DROP COLUMN IF EXISTS first_name;
+ALTER TABLE posts DROP COLUMN IF EXISTS last_name;
+ALTER TABLE posts DROP COLUMN IF EXISTS profile_picture_url;
+ALTER TABLE posts DROP COLUMN IF EXISTS user_name;

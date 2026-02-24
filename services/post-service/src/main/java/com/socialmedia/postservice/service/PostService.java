@@ -2,10 +2,7 @@ package com.socialmedia.postservice.service;
 
 import com.socialmedia.grpc.interaction.PostInteractionCounts;
 import com.socialmedia.postservice.consts.EventType;
-import com.socialmedia.postservice.dto.CreatePostDto;
-import com.socialmedia.postservice.dto.CursorPageResponse;
-import com.socialmedia.postservice.dto.PostDto;
-import com.socialmedia.postservice.dto.UpdatePostDto;
+import com.socialmedia.postservice.dto.*;
 import com.socialmedia.postservice.dto.event.NotificationEvent;
 import com.socialmedia.postservice.dto.event.NotificationEventType;
 import com.socialmedia.postservice.dto.event.ResourceType;
@@ -15,6 +12,7 @@ import com.socialmedia.postservice.exception.ResourceNotFoundException;
 import com.socialmedia.postservice.exception.ResourceOwnershipException;
 import com.socialmedia.postservice.grpc.InteractionServiceClient;
 import com.socialmedia.postservice.grpc.MinioServiceClient;
+import com.socialmedia.postservice.grpc.UserServiceClient;
 import com.socialmedia.postservice.mapper.EventFactory;
 import com.socialmedia.postservice.mapper.PostMapper;
 import com.socialmedia.postservice.repository.PostRepository;
@@ -29,6 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +38,7 @@ public class PostService {
     private final EventFactory eventFactory;
     private final InteractionServiceClient interactionServiceClient;
     private final MinioServiceClient minioServiceClient;
+    private final UserServiceClient userServiceClient;
 
     @Transactional
     public Long createPost(CreatePostDto dto, AuthenticatedUser user) {
@@ -60,6 +60,8 @@ public class PostService {
 
         var postProjection = postRepository.findByIdAndCountLikesAndComments(postId);
 
+        UserDto user = userServiceClient.getUserInfo(postProjection.getUserId());
+
         List<UUID> fileIds = postMapper.getFileIds(postProjection);
         List<String> mediaUrls = minioServiceClient.getFileUrlsAsList(fileIds);
 
@@ -67,9 +69,10 @@ public class PostService {
         PostInteractionCounts counts = countsMap.get(postId);
 
         if (counts != null) {
-            return postMapper.toPostDto(postProjection, mediaUrls, counts.getLikeCount(), counts.getCommentCount());
+            return postMapper.toPostDto(postProjection, user, mediaUrls, counts.getLikeCount(),
+                    counts.getCommentCount());
         }
-        return postMapper.toPostDto(postProjection, mediaUrls);
+        return postMapper.toPostDto(postProjection, user, mediaUrls);
     }
 
     public CursorPageResponse<PostDto> getUserPosts(String userId, String cursor, Integer pageSize) {
@@ -82,10 +85,12 @@ public class PostService {
             lastId = Long.parseLong(parts[1]);
         }
 
-        List<PostProjection> projections = postRepository.findByUserIdWithCursor(userId, cursorTime, lastId, pageSize + 1);
+        List<PostProjection> projections = postRepository.findByUserIdWithCursor(userId, cursorTime, lastId,
+                pageSize + 1);
 
         boolean hasNext = projections.size() > pageSize;
-        if (hasNext) projections = projections.subList(0, pageSize);
+        if (hasNext)
+            projections = projections.subList(0, pageSize);
 
         List<PostDto> posts = enrichWithInteractionCountsAndUrls(projections);
 
@@ -122,7 +127,8 @@ public class PostService {
         List<PostProjection> projections = postRepository.findByUserIdsWithCursor(
                 userIds, cursorTime, lastId, pageSize + 1);
         boolean hasNext = projections.size() > pageSize;
-        if (hasNext) projections = projections.subList(0, pageSize);
+        if (hasNext)
+            projections = projections.subList(0, pageSize);
         List<PostDto> posts = enrichWithInteractionCountsAndUrls(projections);
         String nextCursor = null;
         if (hasNext && !posts.isEmpty()) {
@@ -173,7 +179,6 @@ public class PostService {
         }
     }
 
-
     private String encodeCursor(String createdAt, Long id) {
         String cursorString = createdAt + "," + id;
         return Base64.getUrlEncoder().encodeToString(cursorString.getBytes());
@@ -219,6 +224,11 @@ public class PostService {
 
         Map<UUID, String> fileUrlMap = minioServiceClient.getFileUrls(allFileIds);
 
+        Map<String, UserDto> userMap = projections.stream()
+                .map(PostProjection::getUserId)
+                .distinct()
+                .collect(Collectors.toMap(id -> id, userServiceClient::getUserInfo, (a, b) -> a));
+
         return projections.stream()
                 .map(projection -> {
                     List<UUID> fileIds = postMapper.getFileIds(projection);
@@ -227,20 +237,24 @@ public class PostService {
                             .filter(Objects::nonNull)
                             .toList();
 
+                    UserDto user = userMap.get(projection.getUserId());
                     PostInteractionCounts counts = countsMap.get(projection.getId());
                     if (counts != null) {
-                        return postMapper.toPostDto(projection, mediaUrls, counts.getLikeCount(), counts.getCommentCount());
+                        return postMapper.toPostDto(projection, user, mediaUrls, counts.getLikeCount(),
+                                counts.getCommentCount());
                     }
-                    return postMapper.toPostDto(projection, mediaUrls);
+                    return postMapper.toPostDto(projection, user, mediaUrls);
                 })
                 .toList();
     }
 
     private void publishPostCreatedNotification(Post post, AuthenticatedUser user) {
+        UserDto userInfo = userServiceClient.getUserInfo(user.id());
+
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("authorUsername", user.username());
-        metadata.put("authorDisplayName", user.firstName() + " " + user.lastName());
-        metadata.put("authorProfilePicture", user.profilePictureUrl());
+        metadata.put("authorDisplayName", userInfo.firstName() + " " + userInfo.lastName());
+        metadata.put("authorProfilePicture", userInfo.profilePictureUrl());
 
         String preview = post.getContent() != null && post.getContent().length() > 100
                 ? post.getContent().substring(0, 100) + "..."

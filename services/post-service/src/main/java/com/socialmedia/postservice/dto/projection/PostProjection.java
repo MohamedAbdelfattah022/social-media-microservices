@@ -8,14 +8,6 @@ public interface PostProjection {
 
     String getUserId();
 
-    String getUserName();
-
-    String getFirstName();
-
-    String getLastName();
-
-    String getProfilePictureUrl();
-
     String getContent();
 
     String getPrivacy();

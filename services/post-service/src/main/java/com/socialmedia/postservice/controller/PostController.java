@@ -4,7 +4,6 @@ import com.socialmedia.postservice.dto.CreatePostDto;
 import com.socialmedia.postservice.dto.CursorPageResponse;
 import com.socialmedia.postservice.dto.PostDto;
 import com.socialmedia.postservice.dto.UpdatePostDto;
-import com.socialmedia.postservice.grpc.UserServiceClient;
 import com.socialmedia.postservice.security.AuthenticatedUser;
 import com.socialmedia.postservice.service.PostService;
 import jakarta.validation.Valid;
@@ -22,27 +21,14 @@ import java.net.URI;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
-    private final UserServiceClient userServiceClient;
 
     @PostMapping
     public ResponseEntity<Void> createPost(
             @Valid @RequestBody CreatePostDto dto,
-            @AuthenticationPrincipal Jwt jwt
-    ) {
-        var partialUser = AuthenticatedUser.fromJwt(jwt);
+            @AuthenticationPrincipal Jwt jwt) {
+        var user = AuthenticatedUser.fromJwt(jwt);
 
-        var userInfo = userServiceClient.getUserInfo(partialUser.id());
-
-        var fullUser = new AuthenticatedUser(
-                partialUser.id(),
-                partialUser.username(),
-                partialUser.email(),
-                userInfo.firstName(),
-                userInfo.lastName(),
-                userInfo.profilePictureUrl()
-        );
-
-        Long id = postService.createPost(dto, fullUser);
+        Long id = postService.createPost(dto, user);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(id)
@@ -60,9 +46,9 @@ public class PostController {
     public ResponseEntity<CursorPageResponse<PostDto>> getUserPosts(
             @PathVariable String userId,
             @RequestParam(required = false) String cursor,
-            @RequestParam Integer pageSize
-    ) {
-        if (pageSize <= 0) pageSize = 10;
+            @RequestParam Integer pageSize) {
+        if (pageSize <= 0)
+            pageSize = 10;
 
         var posts = postService.getUserPosts(userId, cursor, pageSize);
         return ResponseEntity.ok(posts);
@@ -72,8 +58,7 @@ public class PostController {
     public ResponseEntity<Void> updatePost(
             @RequestBody UpdatePostDto dto,
             @PathVariable Long postId,
-            @AuthenticationPrincipal Jwt jwt
-    ) {
+            @AuthenticationPrincipal Jwt jwt) {
         var user = AuthenticatedUser.fromJwt(jwt);
         postService.updatePost(dto, postId, user.id());
         return ResponseEntity.noContent().build();

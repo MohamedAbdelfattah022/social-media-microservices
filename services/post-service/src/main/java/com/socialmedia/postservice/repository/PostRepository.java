@@ -15,10 +15,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                 SELECT
                     p.id,
                     p.user_id,
-                    p.user_name,
-                    p.first_name,
-                    p.last_name,
-                    p.profile_picture_url,
                     p.content,
                     p.privacy,
                     p.is_edited,
@@ -37,10 +33,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                 SELECT
                     p.id,
                     p.user_id,
-                    p.user_name,
-                    p.first_name,
-                    p.last_name,
-                    p.profile_picture_url,
                     p.content,
                     p.privacy,
                     p.is_edited,
@@ -66,10 +58,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                 SELECT
                     p.id,
                     p.user_id,
-                    p.user_name,
-                    p.first_name,
-                    p.last_name,
-                    p.profile_picture_url,
                     p.content,
                     p.privacy,
                     p.is_edited,

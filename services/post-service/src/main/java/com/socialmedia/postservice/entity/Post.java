@@ -16,7 +16,8 @@ import java.util.UUID;
 @Builder
 @Entity
 @Table(name = "posts")
-@Getter @Setter
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
@@ -28,26 +29,11 @@ public class Post {
     @Column(name = "user_id", nullable = false, length = 36)
     private String userId;
 
-    @Column(name = "user_name")
-    private String userName;
-
-    @Column(name = "first_name")
-    private String firstName;
-
-    @Column(name = "last_name")
-    private String lastName;
-
-    @Column(name = "profile_picture_url")
-    private String profilePictureUrl;
-
     @Column(columnDefinition = "TEXT")
     private String content;
 
     @ElementCollection
-    @CollectionTable(
-            name = "post_file_ids",
-            joinColumns = @JoinColumn(name = "post_id")
-    )
+    @CollectionTable(name = "post_file_ids", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "file_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private List<UUID> fileIds;

@@ -2,6 +2,7 @@ package com.socialmedia.postservice.mapper;
 
 import com.socialmedia.postservice.dto.CreatePostDto;
 import com.socialmedia.postservice.dto.PostDto;
+import com.socialmedia.postservice.dto.UserDto;
 import com.socialmedia.postservice.dto.projection.PostProjection;
 import com.socialmedia.postservice.entity.Post;
 import com.socialmedia.postservice.enums.PrivacySettings;
@@ -17,24 +18,20 @@ public class PostMapper {
     public Post toPost(CreatePostDto postDto, AuthenticatedUser user) {
         return Post.builder()
                 .userId(user.id())
-                .userName(user.username())
-                .firstName(user.firstName())
-                .lastName(user.lastName())
-                .profilePictureUrl(user.profilePictureUrl())
                 .content(postDto.getContent())
                 .fileIds(postDto.getFileIds())
                 .privacy(postDto.getPrivacy())
                 .build();
     }
 
-    public PostDto toPostDto(PostProjection postProjection, List<String> mediaUrls) {
+    public PostDto toPostDto(PostProjection postProjection, UserDto user, List<String> mediaUrls) {
         return PostDto.builder()
                 .id(postProjection.getId())
                 .userId(postProjection.getUserId())
-                .userName(postProjection.getUserName())
-                .firstName(postProjection.getFirstName())
-                .lastName(postProjection.getLastName())
-                .profilePictureUrl(postProjection.getProfilePictureUrl())
+                .userName(user.username())
+                .firstName(user.firstName())
+                .lastName(user.lastName())
+                .profilePictureUrl(user.profilePictureUrl())
                 .content(postProjection.getContent())
                 .privacy(Enum.valueOf(PrivacySettings.class, postProjection.getPrivacy()))
                 .mediaUrls(mediaUrls != null ? mediaUrls : Collections.emptyList())
@@ -44,8 +41,9 @@ public class PostMapper {
                 .build();
     }
 
-    public PostDto toPostDto(PostProjection postProjection, List<String> mediaUrls, long likeCount, long commentCount) {
-        PostDto dto = toPostDto(postProjection, mediaUrls);
+    public PostDto toPostDto(PostProjection postProjection, UserDto user, List<String> mediaUrls, long likeCount,
+            long commentCount) {
+        PostDto dto = toPostDto(postProjection, user, mediaUrls);
         dto.setLikeCount(likeCount);
         dto.setCommentCount(commentCount);
         return dto;
