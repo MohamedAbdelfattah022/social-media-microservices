@@ -3,11 +3,7 @@ package com.socialmedia.minioservice.service;
 import com.socialmedia.minioservice.config.MinioProperties;
 import com.socialmedia.minioservice.entity.FileMetadata;
 import com.socialmedia.minioservice.repository.FileMetadataRepository;
-import io.minio.GetObjectArgs;
-import io.minio.GetPresignedObjectUrlArgs;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.RemoveObjectArgs;
+import io.minio.*;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.MinioException;
 import io.minio.http.Method;
@@ -179,12 +175,17 @@ public class MinioService {
                             .expiry(props.getPresignedUrlExpiryMinutes(), TimeUnit.MINUTES)
                             .build()
             );
-            log.debug("Generated presigned URL for file {} with expiry {} minutes", 
+            log.debug("Generated presigned URL for file {} with expiry {} minutes",
                     fileId, props.getPresignedUrlExpiryMinutes());
             return url;
         } catch (Exception e) {
             log.error("Error generating presigned URL for file {}: {}", fileId, e.getMessage(), e);
             throw new RuntimeException("Error generating presigned URL", e);
         }
+    }
+
+    public String getPublicUrl(UUID fileId) {
+        FileMetadata metadata = getFileMetadata(fileId);
+        return props.getUrl() + "/" + metadata.getBucketName() + "/" + metadata.getStoredFilename();
     }
 }

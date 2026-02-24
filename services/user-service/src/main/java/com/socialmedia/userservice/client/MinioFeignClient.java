@@ -16,6 +16,9 @@ public interface MinioFeignClient {
     @GetMapping("/api/files/{fileId}/presigned-url")
     String getPresignedUrl(@PathVariable("fileId") String fileId);
 
+    @GetMapping("/api/files/{fileId}/public-url")
+    String getPublicUrl(@PathVariable("fileId") String fileId);
+
     @DeleteMapping("/api/files/delete/{fileId}")
     void deleteFile(@PathVariable("fileId") String fileId);
 }

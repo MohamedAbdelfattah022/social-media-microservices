@@ -41,7 +41,6 @@ public class MinioController {
                     .message("File uploaded successfully")
                     .build();
 
-
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
@@ -142,6 +141,19 @@ public class MinioController {
     public ResponseEntity<String> getPresignedUrl(@PathVariable UUID fileId) {
         try {
             String url = minioService.getPresignedUrl(fileId);
+            return ResponseEntity.ok(url);
+        } catch (RuntimeException e) {
+            if (e.getMessage() != null && e.getMessage().contains("not found")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/{fileId}/public-url")
+    public ResponseEntity<String> getPublicUrl(@PathVariable UUID fileId) {
+        try {
+            String url = minioService.getPublicUrl(fileId);
             return ResponseEntity.ok(url);
         } catch (RuntimeException e) {
             if (e.getMessage() != null && e.getMessage().contains("not found")) {

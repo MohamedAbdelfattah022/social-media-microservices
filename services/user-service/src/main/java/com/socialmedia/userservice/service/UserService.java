@@ -122,13 +122,13 @@ public class UserService {
         FileUploadResponse uploadResponse = minioFeignClient.uploadFile(file);
         String fileId = uploadResponse.getId();
 
-        String presignedUrl = minioFeignClient.getPresignedUrl(fileId);
+        String publicUrl = minioFeignClient.getPublicUrl(fileId);
 
-        profile.setProfilePictureUrl(presignedUrl);
+        profile.setProfilePictureUrl(publicUrl);
         userProfileRepository.save(profile);
 
         log.info("Profile picture updated for userId={}, fileId={}", userId, fileId);
-        return new UploadProfilePictureResponse(presignedUrl);
+        return new UploadProfilePictureResponse(publicUrl);
     }
 
     @Transactional
