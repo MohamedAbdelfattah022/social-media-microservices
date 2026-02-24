@@ -48,7 +48,7 @@ export class PostCard {
     effect(() => {
       this.postContent.set(this.data().content);
       this.postPrivacy.set(this.data().privacy);
-      this.postIsEdited.set(this.data().isEdited);
+      this.postIsEdited.set(this.data().edited);
     });
   }
 

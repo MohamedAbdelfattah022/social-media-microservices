@@ -8,7 +8,7 @@ export type PostData = {
   content: string;
   privacy: string;
   mediaUrls?: string[];
-  isEdited: boolean;
+  edited: boolean;
   likeCount: number;
   commentCount: number;
   createdAt: string;
