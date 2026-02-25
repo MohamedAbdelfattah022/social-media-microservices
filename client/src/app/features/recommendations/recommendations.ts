@@ -62,4 +62,8 @@ export class Recommendations implements OnInit {
     if (!this.isFollowed(userId)) return 'Follow';
     return this.hoveredUser === userId ? 'Unfollow' : 'Following';
   }
+
+  getInitials(user: UserProfileData): string {
+    return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+  }
 }

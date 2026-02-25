@@ -11,11 +11,23 @@
             class="flex items-center gap-3 flex-1 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -ml-2 transition-colors"
             (click)="navigateToProfile(user.id)"
           >
-            <img
-              [src]="user.profilePictureUrl"
-              [alt]="user.username"
-              class="h-10 w-10 rounded-full border-2 border-gray-100 object-cover"
-            />
+            <div
+              class="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 border-gray-100 bg-linear-to-br from-blue-500 to-blue-600"
+            >
+              @if (user.profilePictureUrl) {
+                <img
+                  [src]="user.profilePictureUrl"
+                  [alt]="user.username"
+                  class="h-full w-full object-cover"
+                />
+              } @else {
+                <div
+                  class="flex h-full w-full items-center justify-center text-xs font-bold text-white"
+                >
+                  {{ getInitials(user) }}
+                </div>
+              }
+            </div>
             <div>
               <p class="text-sm font-semibold text-gray-900">
                 {{ user.firstName }} {{ user.lastName }}
